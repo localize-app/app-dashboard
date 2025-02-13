@@ -2,7 +2,7 @@ import React from 'react';
 import DoughnutChart from '../../charts/DoughnutChart';
 
 // Import utilities
-import { getCssVariable } from '../../utils/Utils';
+import { getCssVariable } from '../../../utils/Utils';
 
 function DashboardCard06() {
 

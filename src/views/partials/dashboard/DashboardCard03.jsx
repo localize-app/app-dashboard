@@ -5,7 +5,7 @@ import { chartAreaGradient } from '../../charts/ChartjsConfig';
 import EditMenu from '../../components/DropdownEditMenu';
 
 // Import utilities
-import { adjustColorOpacity, getCssVariable } from '../../utils/Utils';
+import { adjustColorOpacity, getCssVariable } from '../../../utils/Utils';
 
 function DashboardCard03() {
 

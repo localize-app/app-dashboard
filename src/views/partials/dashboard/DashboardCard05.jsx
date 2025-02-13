@@ -4,7 +4,7 @@ import { chartAreaGradient } from '../../charts/ChartjsConfig';
 import RealtimeChart from '../../charts/RealtimeChart';
 
 // Import utilities
-import { adjustColorOpacity, getCssVariable } from '../../utils/Utils';
+import { adjustColorOpacity, getCssVariable } from '../../../utils/Utils';
 
 function DashboardCard05() {
 

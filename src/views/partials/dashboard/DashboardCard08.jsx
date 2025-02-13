@@ -3,7 +3,7 @@ import { chartAreaGradient } from '../../charts/ChartjsConfig';
 import LineChart from '../../charts/LineChart02';
 
 // Import utilities
-import { getCssVariable } from '../../utils/Utils';
+import { getCssVariable } from '../../../utils/Utils';
 
 function DashboardCard08() {
 

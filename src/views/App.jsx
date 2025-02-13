@@ -5,7 +5,7 @@ import {
   useLocation
 } from 'react-router-dom';
 
-import './css/style.css';
+import '../css/style.css';
 
 import './charts/ChartjsConfig';
 
