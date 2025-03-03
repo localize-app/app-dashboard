@@ -1,5 +1,5 @@
 {
-  "name": "mosaic-react",
+  "name": "mosaic-reactt",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -10,10 +10,13 @@
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.2",
     "@tailwindcss/forms": "^0.5.7",
+    "autoprefixer": "^10.4.20",
     "chart.js": "^4.4.1",
     "chartjs-adapter-moment": "^1.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "flowbite": "^3.1.2",
+    "generate-react-cli": "^8.4.9",
     "moment": "^2.29.4",
     "react": "^19.0.0",
     "react-day-picker": "^9.4.1",
@@ -25,8 +28,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "postcss": "^8.4.32",
-    "tailwindcss": "^4.0.0",
+    "postcss": "^8.5.2",
+    "tailwindcss": "^4.0.7",
     "vite": "^6.0.3"
   }
 }

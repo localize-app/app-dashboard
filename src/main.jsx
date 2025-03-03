@@ -6,10 +6,10 @@ import App from './views/App';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Router>
+    
       <ThemeProvider>
         <App />
       </ThemeProvider>
-    </Router>
+    
   </React.StrictMode>
 );
