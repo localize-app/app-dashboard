@@ -1,7 +1,7 @@
 import '../css/style.css';
 // Import pages
 import Dashboard from './pages/Dashboard/Dashboard';
-import LayOut from './Layouts/Layout/Layout';
+import Layout from './Layouts/Layout/Layout';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import OrganizationOverview from './pages/ManageOrganization/OrganizationOverview/OrganizationOverview';
@@ -39,7 +39,7 @@ function App() {
   const routing = createBrowserRouter([
     {
       path: '',
-      element: <LayOut />,
+      element: <Layout />,
       children: [
         // Default route //
         { index: true, element: <Dashboard /> },
