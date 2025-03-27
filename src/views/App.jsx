@@ -1,8 +1,7 @@
-
 import '../css/style.css';
 // Import pages
 import Dashboard from './pages/Dashboard/Dashboard';
-import LayOut from './pages/LayOut/LayOut'
+import LayOut from './Layouts/Layout/Layout';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import OrganizationOverview from './pages/ManageOrganization/OrganizationOverview/OrganizationOverview';
@@ -34,12 +33,9 @@ import Reports from './pages/Reports/Reports';
 
 import Login from './pages/Login/Login';
 
-
-
 import UsersContextProvider from '../context/UserContext';
 
 function App() {
-
   const routing = createBrowserRouter([
     {
       path: '',
@@ -49,14 +45,14 @@ function App() {
         { index: true, element: <Dashboard /> },
         { path: 'dashboard', element: <Dashboard /> },
 
-        // Manage Organization routes // 
+        // Manage Organization routes //
         { path: 'organization-overview', element: <OrganizationOverview /> },
         { path: 'team', element: <Team /> },
         { path: 'activity-stream', element: <ActivityStream /> },
         { path: 'api-keys', element: <ApiKeys /> },
         { path: 'organization-settings', element: <OrganizationSettings /> },
 
-        // Manage Project routes // 
+        // Manage Project routes //
         { path: 'project-overview', element: <ProjectOverview /> },
         { path: 'languages', element: <Languages /> },
         { path: 'style-guide', element: <StyleGuide /> },
@@ -65,7 +61,7 @@ function App() {
         { path: 'widget', element: <Widget /> },
         { path: 'project-settings', element: <ProjectSettings /> },
 
-        // Manage Phrases routes // 
+        // Manage Phrases routes //
         { path: 'manage-phrases', element: <ManagePhrases /> },
         { path: 'cat-tool', element: <CatTool /> },
         { path: 'glossary', element: <Glossary /> },
@@ -75,11 +71,11 @@ function App() {
         { path: 'page-manager', element: <PageManger /> },
         { path: 'dynamic-phrases', element: <DynamicPhrases /> },
 
-        //  Other ------ routes  // 
+        //  Other ------ routes  //
         { path: 'orders', element: <Orders /> },
         { path: 'reports', element: <Reports /> },
 
-        { path: 'signin', element: <Login /> }
+        { path: 'signin', element: <Login /> },
       ],
     },
   ]);
@@ -92,10 +88,10 @@ function App() {
   // }, [location.pathname]); // triggered on route change
 
   return (
-       <UsersContextProvider>
-        <RouterProvider router={routing}></RouterProvider>
-      </UsersContextProvider>
-   )
+    <UsersContextProvider>
+      <RouterProvider router={routing}></RouterProvider>
+    </UsersContextProvider>
+  );
 }
 
 export default App;
