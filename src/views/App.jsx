@@ -92,12 +92,10 @@ function App() {
   // }, [location.pathname]); // triggered on route change
 
   return (
-    <>
-      <UsersContextProvider>
+       <UsersContextProvider>
         <RouterProvider router={routing}></RouterProvider>
       </UsersContextProvider>
-    </>
-  )
+   )
 }
 
 export default App;
