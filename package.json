@@ -1,19 +1,27 @@
 {
-  "name": "mosaic-react",
+  "name": "mosaic-reactt",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.2",
     "@tailwindcss/forms": "^0.5.7",
+    "@tanstack/react-query": "^5.72.1",
+    "antd": "^5.24.5",
+    "autoprefixer": "^10.4.20",
     "chart.js": "^4.4.1",
     "chartjs-adapter-moment": "^1.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "flowbite": "^3.1.2",
+    "generate-react-cli": "^8.4.9",
     "moment": "^2.29.4",
     "react": "^19.0.0",
     "react-day-picker": "^9.4.1",
@@ -24,9 +32,23 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
+    "@types/eslint": "^9.6.1",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "postcss": "^8.4.32",
-    "tailwindcss": "^4.0.0",
-    "vite": "^6.0.3"
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.5",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "postcss": "^8.5.2",
+    "prettier": "^3.5.3",
+    "prettier-eslint": "^16.3.0",
+    "tailwindcss": "^4.0.7",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.28.0",
+    "vite": "^6.0.3",
+    "vite-plugin-environment": "^1.1.3"
   }
 }
