@@ -1,0 +1,92 @@
+/* Sidebar Styling */
+
+/* Dark mode support */
+.ant-layout-sider.bg-white.dark\:bg-gray-800 .ant-menu {
+  background-color: transparent;
+}
+
+.dark .ant-menu {
+  background-color: #1f2937; /* dark:bg-gray-800 */
+  color: #e5e7eb; /* dark:text-gray-200 */
+}
+
+.dark .ant-menu-item-selected {
+  background-color: #5d47de !important; /* dark:bg-violet-700 */
+}
+
+.dark .ant-menu-submenu-title:hover {
+  color: #f9fafb !important; /* dark:hover:text-white */
+}
+
+.dark .ant-menu-item:hover:not(.ant-menu-item-selected) {
+  color: #f9fafb !important; /* dark:hover:text-white */
+}
+
+.dark .ant-menu-submenu-arrow {
+  color: #9ca3af; /* dark:text-gray-400 */
+}
+
+/* Override Ant Design menu styles to match your current design */
+.sidebar-menu.ant-menu {
+  border-right: none;
+}
+
+.sidebar-menu .ant-menu-item-selected {
+  background-color: #8470ff !important; /* Your violet-500 color */
+  color: white;
+  border-radius: 0.5rem;
+}
+
+.sidebar-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: #8470ff; /* Your violet-500 color */
+}
+
+.sidebar-menu .ant-menu-item:hover:not(.ant-menu-item-selected) {
+  color: #755ff8 !important; /* Your violet-600 color */
+}
+
+.sidebar-menu .ant-menu-item {
+  border-radius: 0.5rem;
+}
+
+.sidebar-menu.ant-menu-inline .ant-menu-item,
+.sidebar-menu.ant-menu-inline .ant-menu-submenu-title {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+/* Custom scrollbar for sidebar */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Collapsed state adjustments */
+.ant-layout-sider-collapsed .ant-menu-item .nav-text,
+.ant-layout-sider-collapsed .ant-menu-submenu-title .nav-text {
+  display: none;
+}
+
+.ant-layout-sider-collapsed .ant-menu-item .anticon,
+.ant-layout-sider-collapsed .ant-menu-submenu-title .anticon {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Transition animations */
+.ant-layout-sider {
+  transition: all 0.2s;
+}
+
+.ant-layout-sider-collapsed {
+  transition: all 0.2s;
+}
+
+/* Active NavLink styling */
+.ant-menu-item a.active {
+  color: inherit;
+}

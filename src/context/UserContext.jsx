@@ -5,9 +5,7 @@ import Image03 from '../images/user-36-07.jpg';
 import Image04 from '../images/user-36-08.jpg';
 import Image05 from '../images/user-36-09.jpg';
 
-
-const team =
- [
+export const team = [
   {
     id: '0',
     image: Image01,
@@ -45,12 +43,12 @@ const team =
   },
 ];
 
-
 export let UsersContext = createContext(null);
-export default function UsersContextProvider({children}) {
-  let [users ,setUsers] =useState(team)
 
-  return <UsersContext.Provider value={{users}} >
-    {children}
-  </UsersContext.Provider>
+export default function UsersContextProvider({ children }) {
+  let [users, setUsers] = useState(team);
+
+  return (
+    <UsersContext.Provider value={{ users }}>{children}</UsersContext.Provider>
+  );
 }

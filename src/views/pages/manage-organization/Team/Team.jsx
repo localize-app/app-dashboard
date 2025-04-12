@@ -1,20 +1,18 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { Table, Card,   } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Table, Card } from 'antd';
 
-import { UsersContext } from '../../../../context/UserContext';
 import DashboardCard14 from '../../../partials/dashboard/DashboardCard14';
 import DashboardCard15 from '../../../partials/dashboard/DashboardCard15';
 import { teamTableColumns } from './constants';
+import { team } from '@/context/UserContext';
 
 const Team = () => {
-  const { users } = useContext(UsersContext);
+  let users = team;
   const [usersTeam, setUsersTeam] = useState([]);
 
   useEffect(() => {
     setUsersTeam(users);
   }, [users]);
-
- 
 
   return (
     <div className="flex w-full gap-6">
@@ -27,14 +25,10 @@ const Team = () => {
         </div>
       </div>
       <div className="w-full">
-        <Card 
-          title="Your Team" 
-          bordered={false} 
-          className="shadow-xs"
-        >
-          <Table 
-            columns={teamTableColumns} 
-            dataSource={usersTeam} 
+        <Card title="Your Team" bordered={false} className="shadow-xs">
+          <Table
+            columns={teamTableColumns}
+            dataSource={usersTeam}
             rowKey="id"
             pagination={false}
           />
@@ -42,6 +36,6 @@ const Team = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Team;
