@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Tooltip from '../../components/Tooltip';
-import { chartAreaGradient } from '../../charts/ChartjsConfig';
-import RealtimeChart from '../../charts/RealtimeChart';
+
 
 // Import utilities
 import { adjustColorOpacity, getCssVariable } from '../../../utils/Utils';

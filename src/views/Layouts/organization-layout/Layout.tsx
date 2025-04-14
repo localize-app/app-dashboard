@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Layout as AntLayout, Button, Space } from 'antd';
-import { FilterOutlined, PlusOutlined } from '@ant-design/icons';
+// import { FilterOutlined, PlusOutlined } from '@ant-design/icons';
 
 // Import the sidebar styles
 import '../../../css/sidebar-styles.css';
@@ -14,7 +14,7 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <AntLayout className="min-h-screen">
+    <AntLayout className="min-h-screen ">
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 

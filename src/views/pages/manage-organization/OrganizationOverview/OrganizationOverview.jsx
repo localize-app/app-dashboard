@@ -1,10 +1,7 @@
 import React from 'react'
-import styles from './OrganizationOverview.module.css'
 import DashboardCard16 from '../../../partials/dashboard/DashboardCard16';
 import DashboardCard15 from '../../../partials/dashboard/DashboardCard15';
 import DashboardCard17 from '../../../partials/dashboard/DashboardCard17';
-import DashboardCard01 from '../../../partials/dashboard/DashboardCard01';
-import DashboardCard02 from '../../../partials/dashboard/DashboardCard02';
 import DashboardCard18 from '../../../partials/dashboard/DashboardCard18';
 import DashboardCard19 from '../../../partials/dashboard/DashboardCard19';
 
