@@ -1,4 +1,4 @@
-import {   Avatar, Tag, Button } from 'antd';
+import { Avatar, Tag, Button } from 'antd';
 
 export const teamTableColumns = [
     {

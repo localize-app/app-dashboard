@@ -28,6 +28,7 @@ import ThemeProvider from '../utils/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
 import Dashboard from './pages/Dashboard/Dashboard';
 import ManagePhrases from './pages/Phrases/ManagePhrases/ManagePhrases';
+import UserContextProvider from '@/context/UserContext';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -102,21 +103,17 @@ function App() {
           ],
         },
       ],
-    },
-
-    // 404 page
-    // {
-    //   path: '*',
-    //   element: <NotFoundPage />,
-    // },
+    }
   ]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
+        <UserContextProvider>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </UserContextProvider>
       </ThemeProvider>
       {/* Add React Query Devtools (visible only in development) */}
       <ReactQueryDevtools initialIsOpen={false} />

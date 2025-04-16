@@ -3,7 +3,7 @@ import Banner from '../../partials/Banner';
 
 function Dashboard() {
   return (
-      <h1>Interval</h1>
+      <h1 className='dark:text-white text-5xl'>Interval</h1>
   );
 }
 
