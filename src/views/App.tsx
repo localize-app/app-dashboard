@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 // Import pages
-import Dashboard from './pages/dashboard/Dashboard';
+
 import OrganizationLayout from './Layouts/organization-layout/Layout';
 import LoginPage from './pages/auth/login/Login';
 import UnauthorizedPage from './pages/auth/unauthorized/Unauthorized';
@@ -19,35 +19,16 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Import organization pages
 import OrganizationOverview from './pages/manage-organization/OrganizationOverview/OrganizationOverview';
 import Team from './pages/manage-organization/Team/Team';
-import ActivityStream from './pages/manage-organization/ActivityStream/ActivityStream';
-import ApiKeys from './pages/manage-organization/ApiKeys/ApiKeys';
-import OrganizationSettings from './pages/manage-organization/OrganizationSettings/OrganizationSettings';
 
 // Import project pages
 import ProjectOverview from './pages/manage-projects/ProjectOverview/ProjectOverview';
 import Languages from './pages/manage-projects/Languages/Languages';
-import WebHooks from './pages/manage-projects/WebHooks/WebHooks';
-import StyleGuide from './pages/manage-projects/StyleGuide/StyleGuide';
-import Integration from './pages/manage-projects/Integration/Integration';
-import Widget from './pages/manage-projects/Widget/Widget';
-import ProjectSettings from './pages/manage-projects/ProjectSettings/ProjectSettings';
-
-// Import phrase pages
-import ManagePhrases from './pages/phrases/ManagePhrases/ManagePhrases';
-import CatTool from './pages/phrases/CatTool/CatTool';
-import Glossary from './pages/phrases/Glossary/Glossary';
-import FileMangment from './pages/phrases/FileMangment/FileMangment';
-import ContextEditor from './pages/phrases/ContextEditor/ContextEditor';
-import PageManger from './pages/phrases/PageManger/PageManger';
-import LableManager from './pages/phrases/LableManager/LableManager';
-import DynamicPhrases from './pages/phrases/DynamicPhrases/DynamicPhrases';
-
-// Import other pages
-import Orders from './pages/orders/Orders';
-import Reports from './pages/reports/Reports';
 
 import ThemeProvider from '../utils/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
+import Dashboard from './pages/Dashboard/Dashboard';
+import ManagePhrases from './pages/Phrases/ManagePhrases/ManagePhrases';
+import UserContextProvider from '@/context/UserContext';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -82,20 +63,8 @@ function App() {
           children: [
             { index: true, element: <Dashboard /> },
             { path: 'dashboard', element: <Dashboard /> },
-
-            // Orders and Reports routes
-            { path: 'orders', element: <Orders /> },
-            { path: 'reports', element: <Reports /> },
-
-            // Phrases management routes
             { path: 'manage-phrases', element: <ManagePhrases /> },
-            { path: 'cat-tool', element: <CatTool /> },
-            { path: 'glossary', element: <Glossary /> },
-            { path: 'file-managment', element: <FileMangment /> },
-            { path: 'context-editor', element: <ContextEditor /> },
-            { path: 'page-manager', element: <PageManger /> },
-            { path: 'lable-manager', element: <LableManager /> },
-            { path: 'dynamic-phrases', element: <DynamicPhrases /> },
+            // { path: 'page-manager', element: <PageManger /> },
           ],
         },
       ],
@@ -112,11 +81,6 @@ function App() {
             // Project management routes
             { path: 'project-overview', element: <ProjectOverview /> },
             { path: 'languages', element: <Languages /> },
-            { path: 'web-hooks', element: <WebHooks /> },
-            { path: 'style-guide', element: <StyleGuide /> },
-            { path: 'integration', element: <Integration /> },
-            { path: 'widget', element: <Widget /> },
-            { path: 'project-settings', element: <ProjectSettings /> },
           ],
         },
       ],
@@ -136,30 +100,20 @@ function App() {
               element: <OrganizationOverview />,
             },
             { path: 'team', element: <Team /> },
-            { path: 'activity-stream', element: <ActivityStream /> },
-            { path: 'api-keys', element: <ApiKeys /> },
-            {
-              path: 'organization-settings',
-              element: <OrganizationSettings />,
-            },
           ],
         },
       ],
-    },
-
-    // 404 page
-    // {
-    //   path: '*',
-    //   element: <NotFoundPage />,
-    // },
+    }
   ]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
+        <UserContextProvider>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </UserContextProvider>
       </ThemeProvider>
       {/* Add React Query Devtools (visible only in development) */}
       <ReactQueryDevtools initialIsOpen={false} />

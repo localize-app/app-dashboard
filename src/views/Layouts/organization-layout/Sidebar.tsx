@@ -175,12 +175,13 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: any) {
         collapsed={collapsed}
         width={280}
         collapsedWidth={80}
+        style={{ height: '100%', minHeight: '100vh' }}
         className={`flex lg:flex! flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll lg:overflow-y-auto no-scrollbar bg-white dark:bg-gray-800 p-4 transition-all duration-200 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-64'
         } ${
           variant === 'v2'
             ? 'border-r border-gray-200 dark:border-gray-700/60'
-            : 'rounded-r-2xl shadow-xs'
+            : 'shadow-xs'
         }`}
       >
         {/* Sidebar header */}
