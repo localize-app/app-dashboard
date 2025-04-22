@@ -25,3 +25,10 @@ export function useCustomers() {
     queryFn: api.getCustomers,
   });
 }
+// users data
+export function useUsers() {
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: api.getAllUsers,
+  });
+}

@@ -1,275 +1,118 @@
-import React, { useContext, useEffect, useState } from 'react';
-import {
-  Table,
-  Input,
-  Button,
-  Tabs,
-  Select,
-  Tooltip,
-  Badge,
-  Progress,
-  Typography,
-  Spin,
-  Alert,
-  ConfigProvider,
-  theme,
-  Space,
-  Avatar
-} from 'antd';
-import {
-  SearchOutlined,
-  DownloadOutlined,
-  PlusOutlined,
-  EditOutlined,
-  InfoCircleOutlined
-} from '@ant-design/icons';
-import axios from 'axios';
-import { UserContext } from '@/context/UserContext';
-
+import { useUsers } from '@/api/hooks/useQueries';
+import { useEffect, useMemo, useState } from 'react';
+import { Card, Typography, Tag, Spin, Alert, Table, Progress, Flex, Input } from 'antd';
+import { green, red } from '@ant-design/colors';
 const { Title, Text } = Typography;
-const { useToken } = theme;
+const { Search } = Input;
 
-export default function TeamManagement() {
-  const [activeTab, setActiveTab] = useState('1');
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const authToken = localStorage.getItem("auth_token");
-  let { userCount, setUserCount } = useContext(UserContext);
 
-  // Fetch team members with Axios (try/catch)
-  const fetchTeamMembers = async () => {
-    setIsLoading(true);
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/user`, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      setTeamMembers(res.data);
-      setUserCount(res.data.length);
-      setIsError(false);
-    } catch (err) {
-      console.error(err);
-      setIsError(true);
-      setErrorMessage(err.response?.data?.message || err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export default function Team() {
+  const { data: usersTeam, isLoading, error } = useUsers();
+  const [searchValue, setSearchValue] = useState('');
 
   useEffect(() => {
-    fetchTeamMembers();
-  }, []);
+    if (usersTeam) {
+      console.log(usersTeam);
+    }
+  }, [usersTeam]);
 
-  const filteredMembers = teamMembers.filter(member =>
-    Object.values(member).some(
-      value =>
-        value?.toString().toLowerCase().includes(searchText.toLowerCase())
-    )
+
+  const filteredUsers = useMemo(() => {
+    if (!usersTeam) return [];
+    return usersTeam.filter(user =>
+      user.email?.toLowerCase().includes(searchValue.toLowerCase()) ||
+      user.name?.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [usersTeam, searchValue]);
+
+  if (isLoading) return <Spin size="large" className="flex justify-center items-center w-100 my-8" />;
+
+  if (error) return (
+    <Alert
+      message="Error"
+      description={`Error loading user data: ${error.message}`}
+      type="error"
+      showIcon
+    />
+  );
+
+  if (!usersTeam || usersTeam.length === 0) return (
+    <Alert
+      message="No Data"
+      description="No user data available"
+      type="info"
+      showIcon
+    />
   );
 
   const columns = [
     {
-      title: 'User Name',
+      title: 'Name',
       dataIndex: 'name',
-      key: 'name',
-      render: (_, record) => (
-        <Space>
-          <Avatar style={{ backgroundColor: '#1677ff' }}>
-            {record.initials || record.name?.charAt(0)}
-          </Avatar>
-          <div>
-            <div>{record.name}</div>
-            <div style={{ fontSize: 12, color: '#888' }}>
-              {record.email}
-              {record.verified && (
-                <Badge status="processing" color="#1890ff" style={{ marginLeft: 4 }} />
-              )}
-            </div>
-          </div>
-        </Space>
-      ),
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
     },
     {
       title: 'Role',
       dataIndex: 'role',
-      key: 'role',
     },
     {
       title: 'Billing',
       dataIndex: 'billing',
-      key: 'billing',
     },
     {
       title: 'Last Online',
-      dataIndex: 'lastOnline',
-      key: 'lastOnline',
+      dataIndex: 'lastLoginAt',
+      render: (text) => {
+        const date = new Date(text);
+        return (
+          <Text>{date.toLocaleDateString()}</Text>
+        );
+      },
     },
     {
       title: 'Project Access',
-      dataIndex: 'projectAccess',
-      key: 'projectAccess',
+      dataIndex: 'projects',
     },
     {
       title: 'Actions',
-      key: 'actions',
+      width: 150,
+      fixed: 'right',
       render: () => (
-        <Button type="text" icon={<EditOutlined />} />
+        <Flex vertical justify='center' align="center" gap={8}>
+          <Typography.Link>Edit</Typography.Link>
+          <Typography.Link type="danger">Delete</Typography.Link>
+        </Flex>
       ),
     },
   ];
-
-  const exportTeamData = () => {
-    console.log('Exporting team data');
-  };
-
-  const addMember = () => {
-    console.log('Adding new member');
-  };
-
-  const tabItems = [
-    {
-      key: '1',
-      label: 'Your Team',
-      children: (
-        <>
-          <Space
-            direction="vertical"
-            size="middle"
-            style={{ display: 'flex', marginBottom: 16 }}
-          >
-            <Space wrap style={{ justifyContent: 'space-between', width: '100%' }}>
-              <Input
-                placeholder="Search..."
-                prefix={<SearchOutlined />}
-                allowClear
-                onChange={(e) => setSearchText(e.target.value)}
-                style={{ maxWidth: 300 }}
-              />
-              <Space wrap>
-                <Select defaultValue="Inter-Val" style={{ width: 120 }}>
-                  <Select.Option value="inter-val">Inter-Val</Select.Option>
-                </Select>
-                <Button
-                  icon={<DownloadOutlined />}
-                  onClick={exportTeamData}
-                >
-                  Export Team Data
-                </Button>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={addMember}
-                >
-                  Add Member
-                </Button>
-              </Space>
-            </Space>
-
-            <Space
-              style={{
-                justifyContent: 'space-between',
-                width: '100%',
-              }}
-              wrap
-            >
-              <Text>
-                All Team Members:{' '}
-                <Text strong>{teamMembers.length} Members</Text>
-              </Text>
-              <Space>
-                <Text>Team Seats</Text>
-                <Progress
-                  percent={teamMembers.length * 10}
-                  showInfo={false}
-                  strokeColor="#f0c132"
-                  style={{ width: 180 }}
-                />
-                <Text>
-                  Used {teamMembers.length} / 10
-                </Text>
-              </Space>
-            </Space>
-          </Space>
-
-          {isLoading ? (
-            <Spin size="large" style={{ display: 'block', marginTop: 64 }} />
-          ) : (
-            <Table
-              columns={columns}
-              dataSource={filteredMembers}
-              rowKey="_id"
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: false,
-                showTotal: (total, range) =>
-                  `${range[0]}-${range[1]} of ${total}`,
-                size: 'small',
-              }}
-              locale={{
-                emptyText: searchText
-                  ? 'No team members match your search'
-                  : 'No team members found',
-              }}
-            />
-          )}
-        </>
-      ),
-    },
-    {
-      key: '2',
-      label: (
-        <span>
-          User Groups <Badge count={0} style={{ backgroundColor: '#a0a0ff' }} />
-        </span>
-      ),
-      children: (
-        <div style={{ padding: 32, textAlign: 'center', color: '#888' }}>
-          User groups content would appear here
-        </div>
-      ),
-    },
-  ];
-
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.defaultAlgorithm, // Change to darkAlgorithm for dark mode
-        token: {
-          colorPrimary: '#1677ff',
-          borderRadius: 6,
-        },
-      }}
-    >
-      <div style={{ padding: 24, backgroundColor: '#fff' }}>
-        <Title level={3}>Your Team</Title>
-        <Text type="secondary">
-          Streamline your team management—manage users, setup granular control
-          of permissions, and setup user groups.
-          <Tooltip title="More information">
-            <InfoCircleOutlined style={{ marginLeft: 8 }} />
-          </Tooltip>
-        </Text>
-
-        {isError && (
-          <Alert
-            message="Error Loading Team Data"
-            description={errorMessage}
-            type="error"
-            showIcon
-            closable
-            style={{ marginTop: 16 }}
+    <div className="p-4 overflow-hidden">
+      <Title level={3} className="mb-4">Team</Title>
+      <Card className="mb-4">
+        <Title level={4} className="mb-4">
+          Team Members   <Tag color="blue">{usersTeam.length}</Tag>
+        </Title>
+        <Flex 
+        align="center" justify="space-between" style={{ width: '90%', marginTop: '2rem', marginBottom: '2rem' }}>
+          <Search
+            placeholder="Search by name or email"
+            allowClear
+            onChange={(e) => setSearchValue(e.target.value)}
+            style={{ width: 300 }}
           />
-        )}
-
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={tabItems}
-          style={{ marginTop: 24 }}
-        />
-      </div>
-    </ConfigProvider>
+          <Progress
+            percent={usersTeam.length * 10}
+            format={(number) => `${number / 10} Member Out of 10`}
+            percentPosition={{ align: 'end', type: 'none' }}
+            strokeColor={[green[6], green[6], red[5]]}
+            steps={10}
+          />
+        </Flex>
+        <Table columns={columns} dataSource={filteredUsers} rowKey="id" />
+      </Card>
+    </div>
   );
 }
