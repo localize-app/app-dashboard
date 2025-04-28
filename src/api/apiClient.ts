@@ -27,7 +27,7 @@ export const api = {
   getSalesData: () => fetchWithAuth('sales'),
 
   // Customers data
-  getCustomers: () => fetchWithAuth('customers'),
+  getAllProjects: () => fetchWithAuth('projects'),
 
   // Users data
   getAllUsers: () => fetchWithAuth('user'),

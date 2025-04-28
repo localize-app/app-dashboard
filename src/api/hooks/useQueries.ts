@@ -19,13 +19,13 @@ export function useSalesData() {
 }
 
 // Customers data
-export function useCustomers() {
+export function useProjects() {
   return useQuery({
-    queryKey: ['customers'],
-    queryFn: api.getCustomers,
+    queryKey: ['projects'],
+    queryFn: api.getAllProjects,
   });
 }
-// users data
+// Users data
 export function useUsers() {
   return useQuery({
     queryKey: ['users'],
