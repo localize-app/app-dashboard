@@ -23,12 +23,13 @@ import Team from './pages/manage-organization/Team/Team';
 // Import project pages
 import ProjectOverview from './pages/manage-projects/ProjectOverview/ProjectOverview';
 import Languages from './pages/manage-projects/Languages/Languages';
-
 import ThemeProvider from '../utils/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
 import Dashboard from './pages/Dashboard/Dashboard';
 import ManagePhrases from './pages/Phrases/ManagePhrases/ManagePhrases';
 import UserContextProvider from '@/context/UserContext';
+import ActivityStream from './pages/manage-organization/Activity-Stream/ActivityStream';
+import OrganizationSettings from './pages/manage-organization/Organization-Settings/OrganziationSettings';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -64,7 +65,11 @@ function App() {
             { index: true, element: <Dashboard /> },
             { path: 'dashboard', element: <Dashboard /> },
             { path: 'manage-phrases', element: <ManagePhrases /> },
-            // { path: 'page-manager', element: <PageManger /> },
+            { path: 'activity-stream', element: <ActivityStream /> },
+            {
+              path: 'organization-settings',
+              element: <OrganizationSettings />,
+            },
           ],
         },
       ],
@@ -72,7 +77,11 @@ function App() {
 
     // Manager/Admin routes - requires manager or admin role
     {
-      element: <ProtectedRoute requiredRoles={[Role.MANAGER, Role.ADMIN]} />,
+      element: (
+        <ProtectedRoute
+          requiredRoles={[Role.MANAGER, Role.ADMIN, Role.MEMBER]}
+        />
+      ),
       children: [
         {
           path: '/',
@@ -88,7 +97,7 @@ function App() {
 
     // Admin only routes
     {
-      element: <ProtectedRoute requiredRoles={[Role.ADMIN]} />,
+      element: <ProtectedRoute requiredRoles={[Role.ADMIN, Role.MEMBER]} />,
       children: [
         {
           path: '/',
@@ -103,7 +112,7 @@ function App() {
           ],
         },
       ],
-    }
+    },
   ]);
 
   return (
