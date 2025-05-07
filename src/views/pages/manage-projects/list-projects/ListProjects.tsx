@@ -55,8 +55,6 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
 
-  console.log(user);
-
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
