@@ -1,87 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  Card,
   Button,
-  Tabs,
   Input,
   Table,
   Tag,
-  Dropdown,
   Menu,
-  Tooltip,
-  message,
-  Spin,
-  Typography,
+  Dropdown,
   Space,
-  Select,
+  message,
+  Typography,
+  Pagination,
   Modal,
-  Divider,
+  Checkbox,
+  Radio,
+  Upload,
 } from 'antd';
 import {
   SearchOutlined,
   FilterOutlined,
   SettingOutlined,
   DownOutlined,
-  ExportOutlined,
-  ImportOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  CheckOutlined,
-  CloseOutlined,
+  SortAscendingOutlined,
+  EllipsisOutlined,
+  InboxOutlined,
 } from '@ant-design/icons';
 
-import { useAuthContext } from '@/context/AuthContext';
-import apiServices from '@/api/apiServices';
+import phrasesApi from '@/api/services/phrasesService';
 import { getFormattedLocaleName, LocaleCode } from '@/types/locale.types';
-import ExportImportPhrases from './components/ImportExport';
+import { Phrase, Translation } from '@/types/phrases.types';
+import ProjectSelector from '@/views/components/ProjectSelector';
+import { Project } from '@/types/projects.types';
 
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
-const { Option } = Select;
-
-interface Phrase {
-  id: string;
-  _id?: string;
-  key: string;
-  sourceText: string;
-  context?: string;
-  project: string;
-  status: 'published' | 'pending' | 'needs_review' | 'rejected' | 'archived';
-  isArchived: boolean;
-  translations: Record<string, Translation>;
-  tags: string[];
-  lastSeenAt?: string;
-  sourceUrl?: string;
-  screenshot?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface Translation {
-  text: string;
-  status: 'pending' | 'approved' | 'rejected' | 'needs_review';
-  isHuman: boolean;
-  lastModified: string;
-  modifiedBy?: string;
-}
-
-interface Project {
-  id: string;
-  name: string;
-  supportedLocales: string[];
-}
 
 const ManagePhrases: React.FC = () => {
   // Get project ID from URL if available
   const { projectId } = useParams<{ projectId: string }>();
-  const { user } = useAuthContext();
 
   // State for phrases data
   const [phrases, setPhrases] = useState<Phrase[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('published');
+  const [tabCounts, setTabCounts] = useState({
+    published: 0,
+    translation_qa: 0,
+    pending: 0,
+    archive: 0,
+  });
 
   // State for filtering and pagination
   const [searchText, setSearchText] = useState<string>('');
@@ -103,7 +70,7 @@ const ManagePhrases: React.FC = () => {
   );
 
   // Fetch phrases based on current filters
-  const fetchPhrases = async () => {
+  const fetchPhrases = useCallback(async () => {
     if (!selectedProject) return;
 
     setLoading(true);
@@ -117,11 +84,15 @@ const ManagePhrases: React.FC = () => {
         limit: pagination.pageSize,
       };
 
-      const response = await apiServices.phrases.getAll(params);
-      setPhrases(response);
+      // Use your phrasesApi service to get phrases
+      const response = await phrasesApi.getPhrases(params);
+      setPhrases(Array.isArray(response) ? response : []);
+
+      // In a real implementation, the API would return total count in headers or response object
+      // For now, we'll just use the length of the returned array
       setPagination({
         ...pagination,
-        total: response.length, // Would normally come from headers in a real implementation
+        total: Array.isArray(response) ? response.length : 0,
       });
       setError(null);
     } catch (err) {
@@ -131,50 +102,79 @@ const ManagePhrases: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    selectedProject,
+    activeTab,
+    pagination.current,
+    pagination.pageSize,
+    searchText,
+  ]);
 
-  // Fetch available projects
-  const fetchProjects = async () => {
+  // Count the number of phrases per status
+  const fetchPhraseCounts = async () => {
+    if (!selectedProject) return;
+
     try {
-      const response = await apiServices.projects.getAll({
-        isArchived: false,
-      });
-      setProjects(response);
+      // In a real implementation, you'd have an optimized API endpoint for this
+      // that counts phrases by status in a single request
+      // For now, we'll use the existing API but this could be improved for performance
 
-      // Set selected project if not already set
-      if (!selectedProject && response.length > 0) {
-        setSelectedProject(response[0].id);
-      }
+      // Set dummy values first to show loading state if needed
+      setTabCounts({
+        published: 0,
+        translation_qa: 0,
+        pending: 0,
+        archive: 0,
+      });
+
+      // Fetch counts for each tab type
+      const publishedResponse = await phrasesApi.getPhrases({
+        project: selectedProject,
+        status: 'published',
+        limit: 1000, // This should be adjusted based on expected volume
+      });
+
+      const pendingResponse = await phrasesApi.getPhrases({
+        project: selectedProject,
+        status: 'pending',
+        limit: 1000,
+      });
+
+      const needsReviewResponse = await phrasesApi.getPhrases({
+        project: selectedProject,
+        status: 'needs_review',
+        limit: 1000,
+      });
+
+      const archivedResponse = await phrasesApi.getPhrases({
+        project: selectedProject,
+        isArchived: true,
+        limit: 1000,
+      });
+
+      // Update counts
+      setTabCounts({
+        published: Array.isArray(publishedResponse)
+          ? publishedResponse.length
+          : 0,
+        translation_qa: Array.isArray(needsReviewResponse)
+          ? needsReviewResponse.length
+          : 0,
+        pending: Array.isArray(pendingResponse) ? pendingResponse.length : 0,
+        archive: Array.isArray(archivedResponse) ? archivedResponse.length : 0,
+      });
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      message.error('Failed to load projects');
+      console.error('Error fetching phrase counts:', err);
     }
   };
-
-  // Initial data loading
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   // Fetch phrases when filters change
   useEffect(() => {
     if (selectedProject) {
       fetchPhrases();
+      fetchPhraseCounts();
     }
-  }, [selectedProject, activeTab, pagination.current, pagination.pageSize]);
-
-  // Search handler with debounce
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (selectedProject) {
-        fetchPhrases();
-      }
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchText]);
+  }, [selectedProject, fetchPhrases]);
 
   // Handle tab change
   const handleTabChange = (key: string) => {
@@ -188,6 +188,11 @@ const ManagePhrases: React.FC = () => {
     setSelectedProject(projectId);
     setPagination({ ...pagination, current: 1 });
     setSelectedRows([]);
+  };
+
+  // Handle language change
+  const handleLanguageChange = (locale: string) => {
+    setTargetLocale(locale);
   };
 
   // Table selection config
@@ -209,13 +214,14 @@ const ManagePhrases: React.FC = () => {
       setLoading(true);
 
       const ids = selectedRows.map((row) => ({ id: row.id }));
-      await apiServices.phrases.batchOperation({
+      await phrasesApi.batchOperation({
         operation,
         items: ids,
       });
 
       message.success(`Successfully ${operation}ed ${ids.length} phrases`);
       fetchPhrases();
+      fetchPhraseCounts();
       setSelectedRows([]);
     } catch (err) {
       console.error(`Error performing batch operation: ${operation}`, err);
@@ -226,15 +232,72 @@ const ManagePhrases: React.FC = () => {
   };
 
   // Individual phrase operations
-  const handleUpdatePhraseStatus = async (phraseId: string, status: string) => {
+  const handleUpdatePhraseStatus = async (
+    phraseId: string,
+    newStatus: string
+  ) => {
     try {
-      await apiServices.phrases.updateStatus(phraseId, { status });
-      message.success('Status updated successfully');
+      await phrasesApi.updateStatus(phraseId, { status: newStatus });
+      message.success(`Status updated to ${newStatus}`);
       fetchPhrases();
+      fetchPhraseCounts();
     } catch (err) {
       console.error('Error updating phrase status:', err);
       message.error('Failed to update status');
     }
+  };
+
+  // State for propose translation modal
+  const [proposeModalVisible, setProposeModalVisible] = useState(false);
+  const [currentPhrase, setCurrentPhrase] = useState<Phrase | null>(null);
+  const [proposedTranslation, setProposedTranslation] = useState('');
+  const [markAsHuman, setMarkAsHuman] = useState(true);
+
+  // Functions for propose modal
+  const showProposeModal = (phrase: Phrase) => {
+    setCurrentPhrase(phrase);
+    const translation = phrase.translations?.[targetLocale];
+    setProposedTranslation(translation?.text || '');
+    setProposeModalVisible(true);
+  };
+
+  const handleProposeTranslation = async () => {
+    if (!currentPhrase || !proposedTranslation.trim()) {
+      message.warning('Please enter a translation.');
+      return;
+    }
+
+    try {
+      await phrasesApi.addTranslation(currentPhrase.id, targetLocale, {
+        text: proposedTranslation,
+        isHuman: markAsHuman,
+        status: 'pending',
+      });
+
+      message.success('Translation proposed successfully');
+      setProposeModalVisible(false);
+      fetchPhrases();
+    } catch (err) {
+      console.error('Error proposing translation:', err);
+      message.error('Failed to propose translation');
+    }
+  };
+
+  // State for variables modal
+  const [variablesModalVisible, setVariablesModalVisible] = useState(false);
+  const [currentVariables, setCurrentVariables] = useState<string[]>([]);
+
+  // Function to show variables modal
+  const showVariablesModal = (phrase: Phrase) => {
+    // Extract variables from the source text - a simple implementation
+    // In a real app, you'd have a more sophisticated detection of variables
+    const variables = (phrase.sourceText.match(/\{\{.*?\}\}/g) || []).map((v) =>
+      v.replace(/\{\{|\}\}/g, '')
+    );
+
+    setCurrentVariables(variables);
+    setCurrentPhrase(phrase);
+    setVariablesModalVisible(true);
   };
 
   // Function to get translation from phrase
@@ -255,46 +318,28 @@ const ManagePhrases: React.FC = () => {
       rejected: { color: 'red', text: 'Rejected' },
       needs_review: { color: 'blue', text: 'Needs Review' },
       published: { color: 'green', text: 'Published' },
-      archived: { color: 'gray', text: 'Archived' },
+      archived: { color: 'default', text: 'Archived' },
     };
 
     const { color, text } = statusMap[status] || {
       color: 'default',
       text: status,
     };
-
     return <Tag color={color}>{text}</Tag>;
   };
 
-  // Propose translation modal
-  const [proposeModalVisible, setProposeModalVisible] = useState(false);
-  const [currentPhrase, setCurrentPhrase] = useState<Phrase | null>(null);
-  const [proposedTranslation, setProposedTranslation] = useState('');
+  // Export/Import functions
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [importModalVisible, setImportModalVisible] = useState(false);
 
-  const showProposeModal = (phrase: Phrase) => {
-    setCurrentPhrase(phrase);
-    const translation = getTranslation(phrase, targetLocale);
-    setProposedTranslation(translation?.text || '');
-    setProposeModalVisible(true);
+  const handleExport = () => {
+    // Show export modal with options
+    setExportModalVisible(true);
   };
 
-  const handleProposeTranslation = async () => {
-    if (!currentPhrase || !proposedTranslation) return;
-
-    try {
-      await apiServices.phrases.addTranslation(currentPhrase.id, targetLocale, {
-        text: proposedTranslation,
-        isHuman: true,
-        status: 'pending',
-      });
-
-      message.success('Translation proposed successfully');
-      setProposeModalVisible(false);
-      fetchPhrases();
-    } catch (err) {
-      console.error('Error proposing translation:', err);
-      message.error('Failed to propose translation');
-    }
+  const handleImport = () => {
+    // Show import modal
+    setImportModalVisible(true);
   };
 
   // Define table columns
@@ -342,110 +387,137 @@ const ManagePhrases: React.FC = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      width: 120,
       render: (status: string) => renderStatusTag(status),
     },
     {
       title: 'Action',
       key: 'action',
+      width: 150,
       render: (_: any, record: Phrase) => (
         <Space size="small">
           <Button type="link" onClick={() => showProposeModal(record)}>
             Propose
           </Button>
+
           <Dropdown
             overlay={
               <Menu>
                 <Menu.Item
-                  key="publish"
-                  onClick={() =>
-                    handleUpdatePhraseStatus(record.id, 'published')
-                  }
-                  icon={<CheckOutlined />}
+                  key="propose"
+                  onClick={() => showProposeModal(record)}
                 >
-                  Publish
+                  Propose
                 </Menu.Item>
+
                 <Menu.Item
                   key="unpublish"
                   onClick={() => handleUpdatePhraseStatus(record.id, 'pending')}
-                  icon={<CloseOutlined />}
                 >
                   Unpublish
                 </Menu.Item>
+
                 <Menu.Item
-                  key="archive"
-                  onClick={() =>
-                    handleUpdatePhraseStatus(record.id, 'archived')
-                  }
-                  icon={<DeleteOutlined />}
+                  key="markHuman"
+                  onClick={() => {
+                    const translation = record.translations?.[targetLocale];
+                    if (translation) {
+                      phrasesApi.addTranslation(record.id, targetLocale, {
+                        ...translation,
+                        isHuman: true,
+                      });
+                      message.success('Marked as human translation');
+                      fetchPhrases();
+                    }
+                  }}
                 >
-                  Archive
+                  Mark as Human
+                </Menu.Item>
+
+                <Menu.Item
+                  key="variables"
+                  onClick={() => showVariablesModal(record)}
+                >
+                  Define Variables
                 </Menu.Item>
               </Menu>
             }
+            trigger={['click']}
           >
-            <Button>
-              More <DownOutlined />
-            </Button>
+            <Button type="text" icon={<EllipsisOutlined />} />
           </Dropdown>
         </Space>
       ),
     },
   ];
 
-  // Render phrase count
-  const renderPhraseCount = () => {
-    if (loading) return <Spin size="small" />;
-
-    const totalCount = pagination.total;
-    const selectedCount = selectedRows.length;
-
+  // Render sidebar
+  const renderSidebar = () => {
     return (
-      <div className="text-sm">
-        {selectedCount > 0 ? (
-          <span>
-            {selectedCount} selected of {totalCount} phrases
-          </span>
-        ) : (
-          <span>{totalCount} phrases</span>
-        )}
-      </div>
-    );
-  };
-
-  // Render language selection
-  const renderLanguageSelector = () => {
-    const project = projects.find((p) => p.id === selectedProject);
-
-    if (!project) return null;
-
-    return (
-      <div className="mb-4 border rounded-lg p-4 bg-gray-50">
-        <div className="flex justify-between items-center mb-2">
-          <Title level={5} className="m-0">
-            Language
-          </Title>
-          <Tooltip title="Select source and target languages">
-            <Button type="text" icon={<SettingOutlined />} />
-          </Tooltip>
-        </div>
-
-        <Divider className="my-2" />
-
-        <div className="flex flex-col space-y-2">
-          <div className="flex justify-between">
-            <div>
-              <div>Source:</div>
-              <div className="font-medium">English (United States)</div>
-            </div>
-            <div className="text-gray-400">en-US</div>
+      <div className="border rounded-md overflow-hidden">
+        {/* Language selector section */}
+        <div className="p-4 border-b">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium m-0">Language</h3>
+            <Button
+              type="text"
+              icon={<SettingOutlined />}
+              className="p-0"
+              onClick={() => message.info('Language settings')}
+            />
           </div>
 
-          <div className="flex justify-between border-l-4 border-blue-500 pl-2 py-1 bg-blue-50">
+          <div className="space-y-4">
             <div>
-              <div>Target:</div>
-              <div className="font-medium">French (Canada)</div>
+              <div className="text-sm text-gray-500">Source:</div>
+              <div className="flex justify-between">
+                <div className="font-medium">English (United States)</div>
+                <div className="text-gray-400">en-US</div>
+              </div>
             </div>
-            <div className="text-gray-400">fr-CA</div>
+
+            <div className="border-l-4 border-blue-500 pl-2 py-1 bg-blue-50">
+              <div className="text-sm text-gray-500">Target:</div>
+              <div className="flex justify-between">
+                <div className="font-medium">French (Canada)</div>
+                <div className="text-gray-400">fr-CA</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs section */}
+        <div>
+          <div
+            className={`flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 ${activeTab === 'published' ? 'bg-blue-50 border-l-4 border-blue-500 pl-3' : ''}`}
+            onClick={() => handleTabChange('published')}
+          >
+            <div className="font-medium">Published</div>
+            <Tag>{tabCounts.published}</Tag>
+          </div>
+
+          <div
+            className={`flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 ${activeTab === 'needs_review' ? 'bg-blue-50 border-l-4 border-blue-500 pl-3' : ''}`}
+            onClick={() => handleTabChange('needs_review')}
+          >
+            <div className="font-medium">Translation QA</div>
+            <Tag>{tabCounts.translation_qa}</Tag>
+          </div>
+
+          <div
+            className={`flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 ${activeTab === 'pending' ? 'bg-blue-50 border-l-4 border-blue-500 pl-3' : ''}`}
+            onClick={() => handleTabChange('pending')}
+          >
+            <div className="font-medium">Pending</div>
+            <Tag>{tabCounts.pending}</Tag>
+          </div>
+
+          <div
+            className={`flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 ${activeTab === 'archive' ? 'bg-blue-50 border-l-4 border-blue-500 pl-3' : ''}`}
+            onClick={() => handleTabChange('archive')}
+          >
+            <div className="font-medium">Archive</div>
+            <Tag>{tabCounts.archive}</Tag>
           </div>
         </div>
       </div>
@@ -454,168 +526,124 @@ const ManagePhrases: React.FC = () => {
 
   return (
     <div className="p-4">
-      <Card>
-        <div className="flex justify-between items-center mb-4">
-          <Title level={3} className="m-0">
-            Manage Phrases
-          </Title>
+      <ProjectSelector onProjectSelect={handleProjectChange} />
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <Title level={3}>Manage Phrases</Title>
 
-          <Space>
-            <Select
-              placeholder="Select Project"
-              style={{ width: 200 }}
-              value={selectedProject}
-              onChange={handleProjectChange}
-            >
-              {projects.map((project) => (
-                <Option key={project.id} value={project.id}>
-                  {project.name}
-                </Option>
-              ))}
-            </Select>
+        <div className="flex items-center gap-2">
+          {/* <Button
+            type="text"
+            className="flex items-center border rounded-md px-3 py-1.5"
+          >
+            {selectedProject
+              ? projects.find((p) => p.id === selectedProject)?.name ||
+                'Select Project'
+              : 'Select Project'}
+            <DownOutlined className="ml-2" />
+          </Button> */}
 
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => message.info('Add phrase functionality')}
-            >
-              Add Phrase
-            </Button>
-          </Space>
+          <Button
+            type="primary"
+            onClick={() => message.info('Add phrase functionality')}
+          >
+            Add Phrase
+          </Button>
         </div>
+      </div>
 
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="w-full md:w-1/4">
-            {renderLanguageSelector()}
+      {/* Main content */}
+      <div className="flex gap-4">
+        {/* Sidebar */}
+        <div className="w-1/4">{renderSidebar()}</div>
 
-            <Tabs
-              activeKey={activeTab}
-              onChange={handleTabChange}
-              tabPosition="left"
-              className="border rounded-lg"
-            >
-              <TabPane
-                tab={
-                  <span className="flex justify-between items-center w-full">
-                    <span>Published</span>
-                    <Tag>
-                      {phrases.filter((p) => p.status === 'published').length}
-                    </Tag>
-                  </span>
-                }
-                key="published"
+        {/* Phrases list */}
+        <div className="w-3/4">
+          {/* Action bar */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Search phrases..."
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={fetchPhrases}
+                style={{ width: 240 }}
               />
-              <TabPane
-                tab={
-                  <span className="flex justify-between items-center w-full">
-                    <span>Translation QA</span>
-                    <Tag>
-                      {
-                        phrases.filter((p) => p.status === 'needs_review')
-                          .length
-                      }
-                    </Tag>
-                  </span>
-                }
-                key="needs_review"
-              />
-              <TabPane
-                tab={
-                  <span className="flex justify-between items-center w-full">
-                    <span>Pending</span>
-                    <Tag>
-                      {phrases.filter((p) => p.status === 'pending').length}
-                    </Tag>
-                  </span>
-                }
-                key="pending"
-              />
-              <TabPane
-                tab={
-                  <span className="flex justify-between items-center w-full">
-                    <span>Archive</span>
-                    <Tag>{phrases.filter((p) => p.isArchived).length}</Tag>
-                  </span>
-                }
-                key="archive"
-              />
-            </Tabs>
-          </div>
 
-          <div className="w-full md:w-3/4">
-            <div className="mb-4 flex justify-between items-center">
-              <Space>
-                <Input
-                  placeholder="Search phrases..."
-                  prefix={<SearchOutlined />}
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ width: 250 }}
-                  allowClear
-                />
+              <Button icon={<FilterOutlined />}>Filters</Button>
 
-                <Button icon={<FilterOutlined />}>Filters</Button>
-              </Space>
+              <Button icon={<SortAscendingOutlined />}>Sort by</Button>
 
-              <Space>
-                {selectedRows.length > 0 && (
-                  <>
-                    <Button
-                      onClick={() => handleBatchOperation('publish')}
-                      icon={<CheckOutlined />}
-                    >
-                      Publish
-                    </Button>
-                    <Button
-                      onClick={() => handleBatchOperation('archive')}
-                      icon={<DeleteOutlined />}
-                    >
-                      Archive
-                    </Button>
-                  </>
-                )}
-
-                <ExportImportPhrases
-                  projectId={selectedProject}
-                  supportedLocales={
-                    projects.find((p) => p.id === selectedProject)
-                      ?.supportedLocales || []
-                  }
-                  selectedPhraseIds={selectedRows.map((row) => row.id)}
-                  onImportComplete={fetchPhrases}
-                />
-              </Space>
+              <Button icon={<SettingOutlined />}>Settings</Button>
             </div>
 
+            <div className="flex items-center gap-2">
+              <div className="text-sm text-gray-500">
+                {selectedRows.length
+                  ? `${selectedRows.length} phrase${selectedRows.length > 1 ? 's' : ''} selected`
+                  : `1 of ${pagination.total}`}
+              </div>
+
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item key="export-json" onClick={handleExport}>
+                      Export JSON
+                    </Menu.Item>
+                    <Menu.Item key="export-csv" onClick={handleExport}>
+                      Export CSV
+                    </Menu.Item>
+                    <Menu.Item key="export-xlsx" onClick={handleExport}>
+                      Export XLSX
+                    </Menu.Item>
+                  </Menu>
+                }
+              >
+                <Button>
+                  Export <DownOutlined />
+                </Button>
+              </Dropdown>
+
+              <Button>
+                Move <DownOutlined />
+              </Button>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="border rounded-md overflow-hidden">
             <Table
               rowSelection={rowSelection}
               columns={columns}
               dataSource={phrases}
               rowKey="id"
               loading={loading}
-              pagination={{
-                ...pagination,
-                showSizeChanger: true,
-                showTotal: (total, range) =>
-                  `${range[0]}-${range[1]} of ${total} items`,
-                onChange: (page, pageSize) => {
-                  setPagination({
-                    ...pagination,
-                    current: page,
-                    pageSize: pageSize || 10,
-                  });
-                },
-              }}
+              pagination={false}
+              size="middle"
               locale={{
-                emptyText: error
-                  ? error
-                  : 'No phrases found. Try changing your filters or add a new phrase.',
+                emptyText:
+                  'No phrases found. Try changing your filters or add a new phrase.',
               }}
-              footer={() => renderPhraseCount()}
             />
+
+            {/* Pagination */}
+            {pagination.total > 0 && (
+              <div className="flex justify-center items-center p-4 border-t">
+                <Pagination
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={pagination.total}
+                  onChange={(page) =>
+                    setPagination({ ...pagination, current: page })
+                  }
+                  showSizeChanger={false}
+                />
+              </div>
+            )}
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Propose Translation Modal */}
       <Modal
@@ -624,32 +652,172 @@ const ManagePhrases: React.FC = () => {
         onCancel={() => setProposeModalVisible(false)}
         onOk={handleProposeTranslation}
         okText="Submit"
-        confirmLoading={loading}
+        width={600}
       >
         {currentPhrase && (
-          <>
-            <div className="mb-4">
-              <div className="text-sm text-gray-500 mb-1">
-                Source ({sourceLocale}):
-              </div>
-              <div className="p-2 border rounded bg-gray-50">
+          <div className="space-y-4">
+            <div>
+              <div className="text-sm text-gray-500 mb-1">Source (en-US):</div>
+              <div className="p-3 border rounded bg-gray-50">
                 {currentPhrase.sourceText}
               </div>
             </div>
 
             <div>
               <div className="text-sm text-gray-500 mb-1">
-                Translation ({targetLocale}):
+                Translation (fr-CA):
               </div>
               <Input.TextArea
-                rows={4}
+                rows={5}
                 value={proposedTranslation}
                 onChange={(e) => setProposedTranslation(e.target.value)}
-                placeholder="Enter your translation..."
+                placeholder="Enter translation here..."
+                className="w-full"
               />
             </div>
-          </>
+
+            <Checkbox
+              checked={markAsHuman}
+              onChange={(e) => setMarkAsHuman(e.target.checked)}
+            >
+              Mark as human translation
+            </Checkbox>
+          </div>
         )}
+      </Modal>
+
+      {/* Define Variables Modal */}
+      <Modal
+        title="Define Variables"
+        visible={variablesModalVisible}
+        onCancel={() => setVariablesModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setVariablesModalVisible(false)}>
+            Close
+          </Button>,
+        ]}
+        width={500}
+      >
+        {currentPhrase && (
+          <div className="space-y-4">
+            <div>
+              <div className="text-sm text-gray-500 mb-1">Source:</div>
+              <div className="p-3 border rounded bg-gray-50">
+                {currentPhrase.sourceText}
+              </div>
+            </div>
+
+            {currentVariables.length > 0 ? (
+              <div>
+                <div className="text-sm text-gray-500 mb-2">
+                  Variables detected:
+                </div>
+                <div className="space-y-2">
+                  {currentVariables.map((variable, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center p-2 border rounded"
+                    >
+                      <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono">
+                        {`{{${variable}}}`}
+                      </div>
+                      <div className="ml-2 text-gray-500">
+                        Keep this variable unchanged in your translation
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-500">
+                No variables detected in this phrase.
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Export Modal */}
+      <Modal
+        title="Export Phrases"
+        visible={exportModalVisible}
+        onCancel={() => setExportModalVisible(false)}
+        onOk={() => {
+          setExportModalVisible(false);
+          message.success('Phrases exported successfully');
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <div className="font-medium mb-1">Export Format</div>
+            <Radio.Group defaultValue="json">
+              <Radio.Button value="json">JSON</Radio.Button>
+              <Radio.Button value="csv">CSV</Radio.Button>
+              <Radio.Button value="xlsx">XLSX</Radio.Button>
+            </Radio.Group>
+          </div>
+
+          <div>
+            <div className="font-medium mb-1">Export Scope</div>
+            <Radio.Group defaultValue="all">
+              <Radio.Button value="all">All Phrases</Radio.Button>
+              <Radio.Button value="selected" disabled={!selectedRows.length}>
+                Selected ({selectedRows.length})
+              </Radio.Button>
+            </Radio.Group>
+          </div>
+
+          <div>
+            <div className="font-medium mb-1">Include Translations</div>
+            <Checkbox.Group
+              options={['en-US', 'fr-CA', 'es-ES'].map((locale) => ({
+                label: getFormattedLocaleName(locale as LocaleCode),
+                value: locale,
+              }))}
+              defaultValue={['fr-CA']}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Import Modal */}
+      <Modal
+        title="Import Phrases"
+        visible={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onOk={() => {
+          setImportModalVisible(false);
+          message.success('Phrases imported successfully');
+          fetchPhrases();
+          fetchPhraseCounts();
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <div className="font-medium mb-1">Upload File</div>
+            <Upload.Dragger
+              accept=".json,.csv,.xlsx"
+              beforeUpload={() => false}
+              maxCount={1}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+              <p className="ant-upload-text">
+                Click or drag file to this area to upload
+              </p>
+              <p className="ant-upload-hint">
+                Supported formats: JSON, CSV, Excel (XLSX)
+              </p>
+            </Upload.Dragger>
+          </div>
+
+          <div>
+            <Checkbox defaultChecked>
+              Overwrite existing phrases with the same key
+            </Checkbox>
+          </div>
+        </div>
       </Modal>
     </div>
   );
