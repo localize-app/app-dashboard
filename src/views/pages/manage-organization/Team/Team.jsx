@@ -14,17 +14,17 @@ import {
   ConfigProvider,
   theme,
   Space,
-  Avatar
+  Avatar,
 } from 'antd';
 import {
   SearchOutlined,
   DownloadOutlined,
   PlusOutlined,
   EditOutlined,
-  InfoCircleOutlined
+  InfoCircleOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
-import { UserContext } from '@/context/UserContext';
+// import { UserContext } from '@/context/UserContext';
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
@@ -36,18 +36,18 @@ export default function TeamManagement() {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const authToken = localStorage.getItem("auth_token");
-  let { userCount, setUserCount } = useContext(UserContext);
+  const authToken = localStorage.getItem('auth_token');
+  // let { userCount, setUserCount } = useContext(UserContext);
 
   // Fetch team members with Axios (try/catch)
   const fetchTeamMembers = async () => {
     setIsLoading(true);
     try {
       const res = await axios.get(`${process.env.REACT_APP_API_URL}/user`, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
+        headers: { Authorization: `Bearer ${authToken}` },
       });
       setTeamMembers(res.data);
-      setUserCount(res.data.length);
+      // setUserCount(res.data.length);
       setIsError(false);
     } catch (err) {
       console.error(err);
@@ -62,10 +62,9 @@ export default function TeamManagement() {
     fetchTeamMembers();
   }, []);
 
-  const filteredMembers = teamMembers.filter(member =>
-    Object.values(member).some(
-      value =>
-        value?.toString().toLowerCase().includes(searchText.toLowerCase())
+  const filteredMembers = teamMembers.filter((member) =>
+    Object.values(member).some((value) =>
+      value?.toString().toLowerCase().includes(searchText.toLowerCase())
     )
   );
 
@@ -84,7 +83,11 @@ export default function TeamManagement() {
             <div style={{ fontSize: 12, color: '#888' }}>
               {record.email}
               {record.verified && (
-                <Badge status="processing" color="#1890ff" style={{ marginLeft: 4 }} />
+                <Badge
+                  status="processing"
+                  color="#1890ff"
+                  style={{ marginLeft: 4 }}
+                />
               )}
             </div>
           </div>
@@ -114,9 +117,7 @@ export default function TeamManagement() {
     {
       title: 'Actions',
       key: 'actions',
-      render: () => (
-        <Button type="text" icon={<EditOutlined />} />
-      ),
+      render: () => <Button type="text" icon={<EditOutlined />} />,
     },
   ];
 
@@ -139,7 +140,10 @@ export default function TeamManagement() {
             size="middle"
             style={{ display: 'flex', marginBottom: 16 }}
           >
-            <Space wrap style={{ justifyContent: 'space-between', width: '100%' }}>
+            <Space
+              wrap
+              style={{ justifyContent: 'space-between', width: '100%' }}
+            >
               <Input
                 placeholder="Search..."
                 prefix={<SearchOutlined />}
@@ -151,10 +155,7 @@ export default function TeamManagement() {
                 <Select defaultValue="Inter-Val" style={{ width: 120 }}>
                   <Select.Option value="inter-val">Inter-Val</Select.Option>
                 </Select>
-                <Button
-                  icon={<DownloadOutlined />}
-                  onClick={exportTeamData}
-                >
+                <Button icon={<DownloadOutlined />} onClick={exportTeamData}>
                   Export Team Data
                 </Button>
                 <Button
@@ -186,9 +187,7 @@ export default function TeamManagement() {
                   strokeColor="#f0c132"
                   style={{ width: 180 }}
                 />
-                <Text>
-                  Used {teamMembers.length} / 10
-                </Text>
+                <Text>Used {teamMembers.length} / 10</Text>
               </Space>
             </Space>
           </Space>

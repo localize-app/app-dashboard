@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProjectOverview = () => {
+const OneProject = () => {
   return (
     <div className="p-4">
       {/* Main Card */}
@@ -279,4 +279,4 @@ const ProjectOverview = () => {
   );
 };
 
-export default ProjectOverview;
+export default OneProject;

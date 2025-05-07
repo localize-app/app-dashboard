@@ -1,16 +1,15 @@
-// src/views/App.tsx
 import React from 'react';
 import '../css/style.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-// Import pages
-
-import OrganizationLayout from './Layouts/organization-layout/Layout';
+// Import layouts and pages
+import OrganizationLayout from './layouts/organization-layout/Layout';
 import LoginPage from './pages/auth/login/Login';
 import UnauthorizedPage from './pages/auth/unauthorized/Unauthorized';
-// import NotFoundPage from './pages/NotFoundPage';
+import Dashboard from './pages/Dashboard/Dashboard';
+import ManagePhrases from './pages/Phrases/ManagePhrases/ManagePhrases';
 
 // Import protected routes
 import { Role } from '../types/auth.types';
@@ -21,16 +20,16 @@ import OrganizationOverview from './pages/manage-organization/OrganizationOvervi
 import Team from './pages/manage-organization/Team/Team';
 
 // Import project pages
-import ProjectOverview from './pages/manage-projects/ProjectOverview/ProjectOverview';
-import Languages from './pages/manage-projects/Languages/Languages';
+import OneProject from './pages/manage-projects/one-project/OneProject';
+import ProjectsList from './pages/manage-projects/list-projects/ListProjects';
+import AddProject from './pages/manage-projects/add-project/AddProject';
 
+// Import providers
 import ThemeProvider from '../utils/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
-import Dashboard from './pages/Dashboard/Dashboard';
-import ManagePhrases from './pages/Phrases/ManagePhrases/ManagePhrases';
 import UserContextProvider from '@/context/UserContext';
 
-// Create a client
+// Create a query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -40,7 +39,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+function App(): JSX.Element {
   // Create router with protected routes
   const router = createBrowserRouter([
     // Public routes - no authentication required
@@ -64,7 +63,6 @@ function App() {
             { index: true, element: <Dashboard /> },
             { path: 'dashboard', element: <Dashboard /> },
             { path: 'manage-phrases', element: <ManagePhrases /> },
-            // { path: 'page-manager', element: <PageManger /> },
           ],
         },
       ],
@@ -79,8 +77,10 @@ function App() {
           element: <OrganizationLayout />,
           children: [
             // Project management routes
-            { path: 'project-overview', element: <ProjectOverview /> },
-            { path: 'languages', element: <Languages /> },
+            { path: 'project-overview', element: <OneProject /> },
+            { path: 'projects', element: <ProjectsList /> }, // Projects list route
+            { path: 'add-project', element: <AddProject /> },
+            // { path: 'languages', element: <Languages /> },
           ],
         },
       ],
@@ -103,7 +103,7 @@ function App() {
           ],
         },
       ],
-    }
+    },
   ]);
 
   return (

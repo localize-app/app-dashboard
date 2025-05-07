@@ -264,12 +264,12 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: any) {
                   key: 'team',
                   label: <NavLink to="/team">Team</NavLink>,
                 },
-                {
-                  key: 'activity-stream',
-                  label: (
-                    <NavLink to="/activity-stream">Activity Stream</NavLink>
-                  ),
-                },
+                // {
+                //   key: 'activity-stream',
+                //   label: (
+                //     <NavLink to="/activity-stream">Activity Stream</NavLink>
+                //   ),
+                // },
                 {
                   key: 'api-keys',
                   label: <NavLink to="/api-keys">API Keys</NavLink>,
@@ -288,27 +288,25 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: any) {
               label: 'Manage Project',
               children: [
                 {
-                  key: 'project-overview',
-                  label: (
-                    <NavLink to="/project-overview">Project Overview</NavLink>
-                  ),
+                  key: 'projects-list',
+                  label: <NavLink to="/projects">Projects List</NavLink>,
                 },
                 {
                   key: 'languages',
                   label: <NavLink to="/languages">Languages</NavLink>,
                 },
-                {
-                  key: 'web-hooks',
-                  label: <NavLink to="/web-hooks">Web Hooks</NavLink>,
-                },
+                // {
+                //   key: 'web-hooks',
+                //   label: <NavLink to="/web-hooks">Web Hooks</NavLink>,
+                // },
                 {
                   key: 'style-guide',
                   label: <NavLink to="/style-guide">Style Guide</NavLink>,
                 },
-                {
-                  key: 'integration',
-                  label: <NavLink to="/integration">Integration</NavLink>,
-                },
+                // {
+                //   key: 'integration',
+                //   label: <NavLink to="/integration">Integration</NavLink>,
+                // },
                 {
                   key: 'widget',
                   label: <NavLink to="/widget">Widget</NavLink>,
@@ -328,10 +326,10 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: any) {
                   key: 'manage-phrases',
                   label: <NavLink to="/manage-phrases">Manage Phrases</NavLink>,
                 },
-                {
-                  key: 'cat-tool',
-                  label: <NavLink to="/cat-tool">Cat Tool</NavLink>,
-                },
+                // {
+                //   key: 'cat-tool',
+                //   label: <NavLink to="/cat-tool">Cat Tool</NavLink>,
+                // },
                 {
                   key: 'glossary',
                   label: <NavLink to="/glossary">Glossary</NavLink>,
@@ -371,10 +369,10 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: any) {
               icon: <ShoppingOutlined />,
               label: 'Orders',
               children: [
-                {
-                  key: 'cards',
-                  label: <NavLink to="/orders">Cards</NavLink>,
-                },
+                // {
+                //   key: 'cards',
+                //   label: <NavLink to="/orders">Cards</NavLink>,
+                // },
                 {
                   key: 'transactions',
                   label: <NavLink to="/orders">Transactions</NavLink>,
@@ -385,25 +383,25 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: any) {
                 },
               ],
             },
-            {
-              key: 'reports',
-              icon: <BarChartOutlined />,
-              label: 'Reports',
-              children: [
-                {
-                  key: 'reports-cards',
-                  label: <NavLink to="/reports">Cards</NavLink>,
-                },
-                {
-                  key: 'reports-transactions',
-                  label: <NavLink to="/reports">Transactions</NavLink>,
-                },
-                {
-                  key: 'reports-details',
-                  label: <NavLink to="/reports">Transaction Details</NavLink>,
-                },
-              ],
-            },
+            // {
+            //   key: 'reports',
+            //   icon: <BarChartOutlined />,
+            //   label: 'Reports',
+            //   children: [
+            //     {
+            //       key: 'reports-cards',
+            //       label: <NavLink to="/reports">Cards</NavLink>,
+            //     },
+            //     {
+            //       key: 'reports-transactions',
+            //       label: <NavLink to="/reports">Transactions</NavLink>,
+            //     },
+            //     {
+            //       key: 'reports-details',
+            //       label: <NavLink to="/reports">Transaction Details</NavLink>,
+            //     },
+            //   ],
+            // },
           ]}
         />
       </Sider>
