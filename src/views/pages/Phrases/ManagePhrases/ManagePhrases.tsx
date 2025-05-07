@@ -34,6 +34,7 @@ import {
 import { useAuthContext } from '@/context/AuthContext';
 import apiServices from '@/api/apiServices';
 import { getFormattedLocaleName, LocaleCode } from '@/types/locale.types';
+import ExportImportPhrases from './components/ImportExport';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -574,22 +575,15 @@ const ManagePhrases: React.FC = () => {
                   </>
                 )}
 
-                <Dropdown
-                  overlay={
-                    <Menu>
-                      <Menu.Item key="export" icon={<ExportOutlined />}>
-                        Export Phrases
-                      </Menu.Item>
-                      <Menu.Item key="import" icon={<ImportOutlined />}>
-                        Import Phrases
-                      </Menu.Item>
-                    </Menu>
+                <ExportImportPhrases
+                  projectId={selectedProject}
+                  supportedLocales={
+                    projects.find((p) => p.id === selectedProject)
+                      ?.supportedLocales || []
                   }
-                >
-                  <Button>
-                    Export <DownOutlined />
-                  </Button>
-                </Dropdown>
+                  selectedPhraseIds={selectedRows.map((row) => row.id)}
+                  onImportComplete={fetchPhrases}
+                />
               </Space>
             </div>
 
