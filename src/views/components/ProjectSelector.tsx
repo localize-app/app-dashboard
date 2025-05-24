@@ -33,7 +33,6 @@ const ProjectSelector = ({
           isArchived: false,
         });
         setProjects(response);
-        console.log(response);
 
         // Auto-select first project if none selected
         if (!selectedProject && response.length > 0) {
