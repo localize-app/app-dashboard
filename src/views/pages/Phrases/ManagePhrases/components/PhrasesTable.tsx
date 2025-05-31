@@ -89,7 +89,9 @@ const PhrasesTable: React.FC<PhrasesTableProps> = ({
   };
 
   // Render translation status tag
-  const renderStatusTag = (status?: string) => {
+  const renderStatusTag = (status?: any) => {
+    console.log('Rendering status tag for:', status);
+
     if (!status) return null;
 
     const statusMap: Record<string, { color: string; text: string }> = {
@@ -101,9 +103,9 @@ const PhrasesTable: React.FC<PhrasesTableProps> = ({
       archived: { color: 'default', text: 'Archived' },
     };
 
-    const { color, text } = statusMap[status] || {
+    const { color, text } = statusMap[status?.status] || {
       color: 'default',
-      text: status,
+      text: status?.status || 'Unknown',
     };
     return <Tag color={color}>{text}</Tag>;
   };
@@ -136,13 +138,15 @@ const PhrasesTable: React.FC<PhrasesTableProps> = ({
       key: 'translation',
       render: (_: any, record: Phrase) => {
         const translation = getTranslation(record, targetLocale);
+        console.log(translation);
+
         return (
           <div>
             {translation ? (
               <>
                 <div>{translation.text}</div>
                 <div className="flex items-center mt-1">
-                  {renderStatusTag(translation.status)}
+                  {renderStatusTag(translation)}
                   {translation.isHuman && (
                     <Tag color="purple" className="ml-1">
                       Human
@@ -162,7 +166,7 @@ const PhrasesTable: React.FC<PhrasesTableProps> = ({
       dataIndex: 'status',
       key: 'status',
       width: 120,
-      render: (status: string) => renderStatusTag(status),
+      // render: (status: string) => renderStatusTag(status),
     },
     {
       title: 'Action',

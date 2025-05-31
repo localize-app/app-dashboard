@@ -1,3 +1,4 @@
+// src/views/App.tsx - Updated with Companies route
 import React from 'react';
 import '../css/style.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -8,8 +9,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import OrganizationLayout from './layouts/organization-layout/Layout';
 import LoginPage from './pages/auth/login/Login';
 import UnauthorizedPage from './pages/auth/unauthorized/Unauthorized';
-import Dashboard from './pages/Dashboard/Dashboard';
-import ManagePhrases from './pages/Phrases/ManagePhrases/ManagePhrases';
 
 // Import protected routes
 import { Role } from '../types/auth.types';
@@ -28,6 +27,9 @@ import AddProject from './pages/manage-projects/add-project/AddProject';
 import ThemeProvider from '../utils/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
 import UserContextProvider from '@/context/UserContext';
+import Dashboard from './pages/dashboard/Dashboard';
+import ManagePhrases from './pages/phrases/ManagePhrases/ManagePhrases';
+import Companies from './pages/manage-organization/ManageCompanies';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -100,6 +102,7 @@ function App(): JSX.Element {
               element: <OrganizationOverview />,
             },
             { path: 'team', element: <Team /> },
+            { path: 'companies', element: <Companies /> }, // New companies route
           ],
         },
       ],

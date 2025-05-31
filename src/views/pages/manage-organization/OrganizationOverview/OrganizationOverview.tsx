@@ -122,7 +122,8 @@ export default function OrganizationOverview() {
         </Title>
         <div className="flex items-center">
           <Text className="mr-2">Plan:</Text>
-          <Text className="text-blue-500">INTERVAL ADVANCED</Text>
+          {/* TODO: dynamic */}
+          {/* <Text className="text-blue-500">INTERVAL ADVANCED</Text> */}
         </div>
       </div>
 

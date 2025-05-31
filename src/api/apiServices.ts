@@ -1,4 +1,4 @@
-// src/api/apiServices.ts
+// src/api/apiServices.ts - Updated with company service
 import apiClient from './apiClient';
 import {
   Project,
@@ -11,6 +11,11 @@ import {
   RegisterDto,
   AuthResponse,
 } from '@/types/auth.types';
+import {
+  Company,
+  CreateCompanyDto,
+  UpdateCompanyDto,
+} from '@/types/company.types';
 
 /**
  * Centralized API services with TypeScript typing
@@ -40,6 +45,44 @@ export const apiServices = {
     getProfile: async (): Promise<User> => {
       const response = await apiClient.get<User>('/auth/profile');
       return response.data;
+    },
+  },
+
+  // COMPANY SERVICES
+  companies: {
+    // Get all companies
+    getAll: async (params: Record<string, any> = {}): Promise<Company[]> => {
+      const response = await apiClient.get<Company[]>('/companies', { params });
+      return response.data;
+    },
+
+    // Get a specific company by ID
+    getById: async (id: string): Promise<Company> => {
+      const response = await apiClient.get<Company>(`/companies/${id}`);
+      return response.data;
+    },
+
+    // Create a new company
+    create: async (companyData: CreateCompanyDto): Promise<Company> => {
+      const response = await apiClient.post<Company>('/companies', companyData);
+      return response.data;
+    },
+
+    // Update a company
+    update: async (
+      id: string,
+      companyData: UpdateCompanyDto
+    ): Promise<Company> => {
+      const response = await apiClient.patch<Company>(
+        `/companies/${id}`,
+        companyData
+      );
+      return response.data;
+    },
+
+    // Delete a company
+    delete: async (id: string): Promise<void> => {
+      await apiClient.delete(`/companies/${id}`);
     },
   },
 
