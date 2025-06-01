@@ -226,7 +226,7 @@ export const useManagePhrases = () => {
   ) => {
     try {
       // For publish/approve operations, validate the single phrase
-      if (['publish', 'approve'].includes(newStatus)) {
+      if (['publish', 'approve', 'approve_translations'].includes(newStatus)) {
         const phrase = phrases.find((p) => p.id === phraseId);
         if (phrase) {
           validateAndExecute([phrase], newStatus);

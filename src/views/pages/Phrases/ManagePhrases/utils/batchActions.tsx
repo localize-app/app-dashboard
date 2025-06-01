@@ -67,7 +67,7 @@ export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
         {
           key: 'publish',
           label: 'Publish',
-          operation: 'publish',
+          operation: 'approve_translations',
           type: 'primary',
           icon: <CheckOutlined />,
           description: 'Make phrases live and available',
@@ -107,7 +107,7 @@ export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
         {
           key: 'approve',
           label: 'Approve & Publish',
-          operation: 'approve',
+          operation: 'approve_translations',
           type: 'primary',
           icon: <CheckOutlined />,
           description: 'Approve translations and publish them',

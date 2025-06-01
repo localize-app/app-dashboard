@@ -2,7 +2,7 @@
 (function () {
   // Basic configuration
   const config = {
-    projectKey: 'prj_9787e8d1c86195be15287c1a049a362d',
+    projectKey: 'prj_421a6b8d1377ff668fe596396d475575',
     apiEndpoint: 'http://localhost:3000/phrases/batch-extract',
     sendFrequency: 10000, // Only send every 10 seconds
     excludeTags: ['script', 'style', 'noscript', 'code', 'pre'],
