@@ -1,4 +1,4 @@
-// src/views/pages/Phrases/ManagePhrases/components/PhrasesSidebar.tsx
+// src/views/pages/Phrases/ManagePhrases/components/PhrasesSidebar.tsx - Updated with Swagger status names
 import React from 'react';
 import { Tag, Button } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
@@ -6,9 +6,10 @@ import { SettingOutlined } from '@ant-design/icons';
 interface PhrasesSidebarProps {
   activeTab: string;
   tabCounts: {
-    published: number;
-    translation_qa: number;
+    ready: number;
+    needs_attention: number;
     pending: number;
+    untranslated: number;
     archive: number;
   };
   sourceLocale: string;
@@ -62,30 +63,30 @@ const PhrasesSidebar: React.FC<PhrasesSidebarProps> = ({
           </div>
         </div>
 
-        {/* Tabs section */}
+        {/* Tabs section - Updated with Swagger status names */}
         <div>
           <div
             className={`flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 ${
-              activeTab === 'published'
+              activeTab === 'ready'
                 ? 'bg-blue-50 border-l-4 border-blue-500 pl-3'
                 : ''
             }`}
-            onClick={() => onTabChange('published')}
+            onClick={() => onTabChange('ready')}
           >
-            <div className="font-medium">Published</div>
-            <Tag>{tabCounts.published}</Tag>
+            <div className="font-medium">Ready (Published)</div>
+            <Tag color="green">{tabCounts.ready || 0}</Tag>
           </div>
 
           <div
             className={`flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 ${
-              activeTab === 'needs_review'
+              activeTab === 'needs_attention'
                 ? 'bg-blue-50 border-l-4 border-blue-500 pl-3'
                 : ''
             }`}
-            onClick={() => onTabChange('needs_review')}
+            onClick={() => onTabChange('needs_attention')}
           >
-            <div className="font-medium">Translation QA</div>
-            <Tag>{tabCounts.translation_qa}</Tag>
+            <div className="font-medium">Needs Attention</div>
+            <Tag color="orange">{tabCounts.needs_attention || 0}</Tag>
           </div>
 
           <div
@@ -97,7 +98,19 @@ const PhrasesSidebar: React.FC<PhrasesSidebarProps> = ({
             onClick={() => onTabChange('pending')}
           >
             <div className="font-medium">Pending</div>
-            <Tag>{tabCounts.pending}</Tag>
+            <Tag color="blue">{tabCounts.pending || 0}</Tag>
+          </div>
+
+          <div
+            className={`flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 ${
+              activeTab === 'untranslated'
+                ? 'bg-blue-50 border-l-4 border-blue-500 pl-3'
+                : ''
+            }`}
+            onClick={() => onTabChange('untranslated')}
+          >
+            <div className="font-medium">Untranslated</div>
+            <Tag color="red">{tabCounts.untranslated || 0}</Tag>
           </div>
 
           <div
@@ -109,7 +122,7 @@ const PhrasesSidebar: React.FC<PhrasesSidebarProps> = ({
             onClick={() => onTabChange('archive')}
           >
             <div className="font-medium">Archive</div>
-            <Tag>{tabCounts.archive}</Tag>
+            <Tag color="default">{tabCounts.archive || 0}</Tag>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+// src/types/phrases.types.ts - Updated with Swagger schema
 export enum TranslationStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
@@ -11,6 +12,15 @@ export enum PhraseStatus {
   NEEDS_REVIEW = 'needs_review',
   REJECTED = 'rejected',
   ARCHIVED = 'archived',
+}
+
+// Overall status based on Swagger schema
+export enum PhraseOverallStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  NEEDS_ATTENTION = 'needs_attention',
+  READY = 'ready',
+  UNTRANSLATED = 'untranslated',
 }
 
 export interface Translation {
@@ -47,7 +57,8 @@ export interface Phrase {
   sourceText: string;
   context?: string;
   project: string;
-  status: PhraseStatus;
+  status?: PhraseStatus;
+  overallStatus?: PhraseOverallStatus; // New field from Swagger
   isArchived: boolean;
   translations: Record<string, Translation>;
   tags: string[];
@@ -61,18 +72,99 @@ export interface Phrase {
   updatedAt?: string;
 }
 
+// Batch operation types based on Swagger schema
 export interface BatchOperation {
-  operation: 'publish' | 'archive' | 'delete' | 'tag' | 'untag';
+  operation:
+    | 'approve_translations'
+    | 'reject_translations'
+    | 'archive'
+    | 'delete'
+    | 'tag'
+    | 'untag';
   items: { id: string }[];
   tag?: string; // For tag/untag operations
+  locale?: string; // For translation operations
 }
 
 export interface PhraseFilterOptions {
   project?: string;
-  status?: string;
-  isArchived?: boolean;
-  search?: string;
-  tags?: string | string[];
-  page?: number;
   limit?: number;
+  page?: number;
+  tags?: string;
+  search?: string;
+  isArchived?: boolean;
+  locale?: string;
+  translationStatus?: TranslationStatus;
+}
+
+// Create phrase DTO based on Swagger schema
+export interface CreatePhraseDto {
+  key: string;
+  sourceText: string;
+  context?: string;
+  project: string;
+  isArchived?: boolean;
+  translations?: Record<string, Translation>;
+  tags?: string[];
+  sourceUrl?: string;
+  screenshot?: string;
+}
+
+// Update phrase DTO based on Swagger schema
+export interface UpdatePhraseDto {
+  key?: string;
+  sourceText?: string;
+  context?: string;
+  project?: string;
+  isArchived?: boolean;
+  translations?: Record<string, Translation>;
+  tags?: string[];
+  sourceUrl?: string;
+  screenshot?: string;
+}
+
+// Add translation DTO based on Swagger schema
+export interface AddTranslationDto {
+  text: string;
+  status?: TranslationStatus;
+  isHuman?: boolean;
+}
+
+// Update status DTO based on Swagger schema
+export interface UpdateStatusDto {
+  status: PhraseStatus;
+}
+
+// Phrase statistics based on Swagger schema
+export interface PhraseStats {
+  total: number;
+  untranslated: number;
+  pending: number;
+  approved: number;
+  needsAttention: number;
+  ready: number;
+  byLocale: Record<
+    string,
+    {
+      total: number;
+      pending: number;
+      approved: number;
+      rejected: number;
+      needsReview: number;
+    }
+  >;
+}
+
+// Export/Import types
+export interface ExportOptions {
+  locales?: string; // comma-separated locale codes
+  status?: string; // comma-separated status values
+}
+
+export interface ImportResult {
+  success: boolean;
+  imported: number;
+  updated: number;
+  errors?: number;
+  message?: string;
 }

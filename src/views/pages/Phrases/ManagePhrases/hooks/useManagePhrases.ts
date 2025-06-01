@@ -1,3 +1,4 @@
+// src/views/pages/Phrases/ManagePhrases/hooks/useManagePhrases.ts - Updated with correct API calls
 import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { useParams } from 'react-router-dom';
@@ -17,7 +18,7 @@ export const useManagePhrases = () => {
   const [selectedProject, setSelectedProject] = useState<string>(
     projectId || ''
   );
-  const [activeTab, setActiveTab] = useState<string>('published');
+  const [activeTab, setActiveTab] = useState<string>('pending');
   const [searchText, setSearchText] = useState<string>('');
   const [selectedRows, setSelectedRows] = useState<Phrase[]>([]);
   const [sourceLocale] = useState<string>('en-US');
@@ -36,9 +37,10 @@ export const useManagePhrases = () => {
   });
 
   const [tabCounts, setTabCounts] = useState({
-    published: 0,
-    translation_qa: 0,
+    ready: 0,
+    needs_attention: 0,
     pending: 0,
+    untranslated: 0,
     archive: 0,
   });
 
@@ -84,10 +86,40 @@ export const useManagePhrases = () => {
 
     try {
       setLoading(true);
-      const ids = phrasesArray.map((row) => ({ id: row.id }));
-      await phrasesApi.batchOperation({ operation, items: ids });
+      const items = phrasesArray.map((row) => ({ id: row.id }));
 
-      message.success(`Successfully ${operation}ed ${ids.length} phrases`);
+      // Map frontend operations to backend operations
+      const operationMapping: Record<string, string> = {
+        publish: 'approve_translations',
+        approve: 'approve_translations',
+        reject: 'reject_translations',
+        archive: 'archive',
+        delete: 'delete',
+        unpublish: 'reject_translations', // Move back to pending
+        send_for_review: 'approve_translations', // Send to needs_review
+        restore: 'archive', // Toggle archive status
+      };
+
+      const backendOperation = operationMapping[operation] || operation;
+
+      // Prepare batch operation params according to Swagger spec
+      const batchParams: any = {
+        operation: backendOperation,
+        items,
+      };
+
+      // Add locale for translation operations
+      if (
+        ['approve_translations', 'reject_translations'].includes(
+          backendOperation
+        )
+      ) {
+        batchParams.locale = targetLocale;
+      }
+
+      await phrasesApi.batchOperation(batchParams);
+
+      message.success(`Successfully ${operation}ed ${items.length} phrases`);
       refreshData();
       clearSelection();
     } catch (err) {
@@ -98,22 +130,53 @@ export const useManagePhrases = () => {
     }
   };
 
-  // Fetch phrases
+  // Fetch phrases using the correct endpoints
   const fetchPhrases = useCallback(async () => {
     if (!selectedProject) return;
 
     setLoading(true);
     try {
-      const params: any = {
-        project: selectedProject,
-        status: activeTab !== 'archive' ? activeTab : undefined,
-        isArchived: activeTab === 'archive',
-        search: searchText || undefined,
-        page: pagination.current,
-        limit: pagination.pageSize,
-      };
+      let response;
 
-      const response = await phrasesApi.getPhrases(params);
+      // Use the by-status endpoint for specific statuses
+      if (
+        [
+          'pending',
+          'approved',
+          'needs_attention',
+          'ready',
+          'untranslated',
+        ].includes(activeTab)
+      ) {
+        response = await phrasesApi.getPhrasesByStatus(
+          selectedProject,
+          activeTab as any,
+          {
+            locale: targetLocale,
+            page: pagination.current,
+            limit: pagination.pageSize,
+          }
+        );
+      } else {
+        // Use the general phrases endpoint for other cases
+        const params: any = {
+          project: selectedProject,
+          page: pagination.current,
+          limit: pagination.pageSize,
+          search: searchText || undefined,
+        };
+
+        // Handle archive status
+        if (activeTab === 'archive') {
+          params.isArchived = true;
+        } else if (activeTab === 'needs_review') {
+          params.translationStatus = 'needs_review';
+          params.locale = targetLocale;
+        }
+
+        response = await phrasesApi.getPhrases(params);
+      }
+
       setPhrases(Array.isArray(response) ? response : []);
       setPagination((prev) => ({ ...prev, total: response.length }));
       setError(null);
@@ -127,48 +190,54 @@ export const useManagePhrases = () => {
   }, [
     selectedProject,
     activeTab,
+    targetLocale,
     pagination.current,
     pagination.pageSize,
     searchText,
   ]);
 
-  // Fetch phrase counts
+  // Fetch phrase counts using the stats endpoint
   const fetchPhraseCounts = useCallback(async () => {
     if (!selectedProject) return;
 
     try {
-      const [publishedRes, pendingRes, reviewRes, archivedRes] =
-        await Promise.all([
-          phrasesApi.getPhrases({
-            project: selectedProject,
-            status: 'published',
+      const stats = await phrasesApi.getPhraseStats(selectedProject);
+
+      setTabCounts({
+        ready: stats.ready || 0,
+        needs_attention: stats.needsAttention || 0,
+        pending: stats.pending || 0,
+        untranslated: stats.untranslated || 0,
+        archive: 0, // Would need separate call for archived phrases
+      });
+    } catch (err) {
+      console.error('Error fetching phrase counts:', err);
+      // Fallback to individual calls if stats endpoint fails
+      try {
+        const [pendingRes, approvedRes, needsReviewRes] = await Promise.all([
+          phrasesApi.getPhrasesByStatus(selectedProject, 'pending', {
             limit: 1000,
           }),
-          phrasesApi.getPhrases({
-            project: selectedProject,
-            status: 'pending',
+          phrasesApi.getPhrasesByStatus(selectedProject, 'ready', {
             limit: 1000,
           }),
-          phrasesApi.getPhrases({
-            project: selectedProject,
-            status: 'needs_review',
-            limit: 1000,
-          }),
-          phrasesApi.getPhrases({
-            project: selectedProject,
-            isArchived: true,
+          phrasesApi.getPhrasesByStatus(selectedProject, 'needs_attention', {
             limit: 1000,
           }),
         ]);
 
-      setTabCounts({
-        published: Array.isArray(publishedRes) ? publishedRes.length : 0,
-        translation_qa: Array.isArray(reviewRes) ? reviewRes.length : 0,
-        pending: Array.isArray(pendingRes) ? pendingRes.length : 0,
-        archive: Array.isArray(archivedRes) ? archivedRes.length : 0,
-      });
-    } catch (err) {
-      console.error('Error fetching phrase counts:', err);
+        setTabCounts({
+          ready: Array.isArray(approvedRes) ? approvedRes.length : 0,
+          needs_attention: Array.isArray(needsReviewRes)
+            ? needsReviewRes.length
+            : 0,
+          pending: Array.isArray(pendingRes) ? pendingRes.length : 0,
+          untranslated: 0, // Would need separate call
+          archive: 0, // Would need separate call with isArchived=true
+        });
+      } catch (fallbackErr) {
+        console.error('Error fetching phrase counts (fallback):', fallbackErr);
+      }
     }
   }, [selectedProject]);
 
@@ -226,7 +295,7 @@ export const useManagePhrases = () => {
   ) => {
     try {
       // For publish/approve operations, validate the single phrase
-      if (['publish', 'approve', 'approve_translations'].includes(newStatus)) {
+      if (['publish', 'approve'].includes(newStatus)) {
         const phrase = phrases.find((p) => p.id === phraseId);
         if (phrase) {
           validateAndExecute([phrase], newStatus);
@@ -236,8 +305,18 @@ export const useManagePhrases = () => {
 
       console.log(`Updating phrase ${phraseId} status to ${newStatus}`);
 
-      // For other operations, proceed directly
-      await phrasesApi.updateStatus(phraseId, newStatus);
+      // Map frontend status to backend status
+      const statusMapping: Record<string, string> = {
+        publish: 'published',
+        unpublish: 'pending',
+        approve: 'published',
+        reject: 'rejected',
+      };
+
+      const backendStatus = statusMapping[newStatus] || newStatus;
+
+      // For other operations, proceed directly using the status endpoint
+      await phrasesApi.updateStatus(phraseId, backendStatus as any);
       message.success(`Status updated to ${newStatus}`);
       refreshData();
     } catch (err) {
@@ -255,7 +334,7 @@ export const useManagePhrases = () => {
     }
   };
 
-  // Add this new function:
+  // Auto-translate using the translation service
   const handleAutoTranslate = async (phrases: Phrase[]) => {
     if (phrases.length === 0) {
       message.warning('No phrases selected');
@@ -265,8 +344,6 @@ export const useManagePhrases = () => {
     try {
       setLoading(true);
       const phraseIds = phrases.map((p) => p.id);
-
-      console.log(projectLocales);
 
       // Call for each target language in the project
       const promises = projectLocales.required

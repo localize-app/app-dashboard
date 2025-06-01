@@ -1,36 +1,129 @@
-// src/api/services/phrasesApi.ts
+// src/api/services/phrasesService.ts - Updated with correct Swagger endpoints
 import apiClient from '../apiClient';
 
 export interface QueryParams {
   project?: string;
-  status?: string;
-  isArchived?: boolean;
-  search?: string;
-  tags?: string | string[];
-  page?: number;
   limit?: number;
+  page?: number;
+  tags?: string;
+  search?: string;
+  isArchived?: boolean;
+  locale?: string;
+  translationStatus?: 'pending' | 'approved' | 'rejected' | 'needs_review';
 }
 
 export interface TranslationParams {
   text: string;
-  status?: string;
+  status?: 'pending' | 'approved' | 'rejected' | 'needs_review';
   isHuman?: boolean;
 }
 
 export interface BatchOperationParams {
-  operation: 'publish' | 'archive' | 'delete' | 'tag' | 'untag';
+  operation:
+    | 'approve_translations'
+    | 'reject_translations'
+    | 'archive'
+    | 'delete'
+    | 'tag'
+    | 'untag';
   items: { id: string }[];
   tag?: string; // For tag/untag operations
+  locale?: string; // For translation operations
+}
+
+export interface CreatePhraseParams {
+  key: string;
+  sourceText: string;
+  context?: string;
+  project: string;
+  isArchived?: boolean;
+  translations?: Record<string, TranslationParams>;
+  tags?: string[];
+  sourceUrl?: string;
+  screenshot?: string;
+}
+
+export interface UpdatePhraseParams {
+  key?: string;
+  sourceText?: string;
+  context?: string;
+  project?: string;
+  isArchived?: boolean;
+  translations?: Record<string, TranslationParams>;
+  tags?: string[];
+  sourceUrl?: string;
+  screenshot?: string;
+}
+
+export interface PhraseStats {
+  total: number;
+  untranslated: number;
+  pending: number;
+  approved: number;
+  needsAttention: number;
+  ready: number;
+  byLocale: Record<
+    string,
+    {
+      total: number;
+      pending: number;
+      approved: number;
+      rejected: number;
+      needsReview: number;
+    }
+  >;
 }
 
 const phrasesApi = {
-  // Get phrases with filtering
+  // Get phrases with filtering and pagination
   getPhrases: async (params: QueryParams = {}) => {
     try {
       const response = await apiClient.get('/phrases', { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching phrases:', error);
+      throw error;
+    }
+  },
+
+  // Get phrases by overall status (new endpoint from Swagger)
+  getPhrasesByStatus: async (
+    projectId: string,
+    status:
+      | 'pending'
+      | 'approved'
+      | 'needs_attention'
+      | 'ready'
+      | 'untranslated',
+    options: {
+      locale?: string;
+      page?: number;
+      limit?: number;
+    } = {}
+  ) => {
+    try {
+      const response = await apiClient.get(
+        `/phrases/by-status/${projectId}/${status}`,
+        {
+          params: options,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching phrases by status:', error);
+      throw error;
+    }
+  },
+
+  // Get phrase statistics for a project
+  getPhraseStats: async (projectId: string): Promise<PhraseStats> => {
+    try {
+      const response = await apiClient.get<PhraseStats>(
+        `/phrases/stats/${projectId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching phrase stats:', error);
       throw error;
     }
   },
@@ -47,7 +140,7 @@ const phrasesApi = {
   },
 
   // Create a new phrase
-  createPhrase: async (data: Partial<Phrase>) => {
+  createPhrase: async (data: CreatePhraseParams) => {
     try {
       const response = await apiClient.post('/phrases', data);
       return response.data;
@@ -58,7 +151,7 @@ const phrasesApi = {
   },
 
   // Update a phrase
-  updatePhrase: async (id: string, data: Partial<Phrase>) => {
+  updatePhrase: async (id: string, data: UpdatePhraseParams) => {
     try {
       const response = await apiClient.patch(`/phrases/${id}`, data);
       return response.data;
@@ -68,8 +161,11 @@ const phrasesApi = {
     }
   },
 
-  // Update phrase status
-  updateStatus: async (id: string, status: string) => {
+  // Update phrase status (specific endpoint for status updates)
+  updateStatus: async (
+    id: string,
+    status: 'published' | 'pending' | 'needs_review' | 'rejected' | 'archived'
+  ) => {
     try {
       const response = await apiClient.patch(`/phrases/${id}/status`, {
         status,
@@ -92,7 +188,7 @@ const phrasesApi = {
     }
   },
 
-  // Add or update a translation
+  // Add or update a translation for a phrase
   addTranslation: async (
     phraseId: string,
     locale: string,
@@ -110,7 +206,7 @@ const phrasesApi = {
     }
   },
 
-  // Batch operations on phrases
+  // Batch operations on phrases (updated with correct operations)
   batchOperation: async (batchParams: BatchOperationParams) => {
     try {
       const response = await apiClient.post('/phrases/batch', batchParams);
@@ -125,21 +221,24 @@ const phrasesApi = {
   exportPhrases: async (
     projectId: string,
     format: 'json' | 'csv' | 'xlsx' = 'json',
-    options?: { locales?: string[]; status?: string[] }
+    options?: {
+      locales?: string; // comma-separated locale codes
+      status?: string; // comma-separated status values
+    }
   ) => {
     try {
-      // Build query parameters
+      // Build query parameters according to Swagger spec
       const params: Record<string, any> = {
         project: projectId,
         format,
       };
 
       if (options?.locales) {
-        params.locales = options.locales.join(',');
+        params.locales = options.locales;
       }
 
       if (options?.status) {
-        params.status = options.status.join(',');
+        params.status = options.status;
       }
 
       // Make a request with blob response type to get file
@@ -200,6 +299,17 @@ const phrasesApi = {
       return response.data;
     } catch (error) {
       console.error('Error importing phrases:', error);
+      throw error;
+    }
+  },
+
+  // Extract phrases (batch extract endpoint from Swagger)
+  extractPhrases: async (data: any) => {
+    try {
+      const response = await apiClient.post('/phrases/batch-extract', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error extracting phrases:', error);
       throw error;
     }
   },

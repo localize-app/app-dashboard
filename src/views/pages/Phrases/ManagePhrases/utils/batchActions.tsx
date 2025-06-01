@@ -5,7 +5,6 @@ import {
   DeleteOutlined,
   RestOutlined,
   UserOutlined,
-  SendOutlined,
   UndoOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
@@ -23,12 +22,13 @@ export interface BatchAction {
 
 export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
   switch (activeTab) {
+    case 'ready':
     case 'published':
       return [
         {
           key: 'unpublish',
           label: 'Unpublish',
-          operation: 'unpublish',
+          operation: 'reject_translations', // Maps to reject_translations in backend
           icon: <UndoOutlined />,
           confirmMessage:
             'Are you sure you want to unpublish the selected phrases?',
@@ -46,50 +46,44 @@ export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
           requiresTranslation: false,
         },
         {
-          key: 'mark-human',
-          label: 'Mark as Human',
-          operation: 'mark_human',
+          key: 'tag',
+          label: 'Add Tag',
+          operation: 'tag',
           icon: <UserOutlined />,
-          description: 'Mark translations as human-verified',
+          description: 'Add a tag to selected phrases',
           requiresTranslation: false,
         },
       ];
 
     case 'pending':
+    case 'untranslated':
       return [
         {
           key: 'auto-translate',
           label: 'Auto-translate',
           operation: 'auto_translate',
           icon: <RobotOutlined />,
+          description: 'Auto-translate missing translations',
           requiresTranslation: false,
         },
         {
           key: 'publish',
-          label: 'Publish',
-          operation: 'approve_translations',
+          label: 'Approve & Publish',
+          operation: 'approve_translations', // Maps to approve_translations in backend
           type: 'primary',
           icon: <CheckOutlined />,
-          description: 'Make phrases live and available',
+          description: 'Approve translations and publish phrases',
           requiresTranslation: true, // This requires translations!
         },
         {
           key: 'reject',
           label: 'Reject',
-          operation: 'reject',
+          operation: 'reject_translations', // Maps to reject_translations in backend
           icon: <CloseOutlined />,
           confirmMessage:
             'Are you sure you want to reject the selected phrases?',
           description: 'Rejected phrases will need to be re-translated',
           requiresTranslation: false,
-        },
-        {
-          key: 'send-for-review',
-          label: 'Send for Review',
-          operation: 'send_for_review',
-          icon: <SendOutlined />,
-          description: 'Move phrases to translation QA queue',
-          requiresTranslation: true, // This also requires translations
         },
         {
           key: 'archive',
@@ -98,16 +92,26 @@ export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
           icon: <CiOutlined />,
           confirmMessage:
             'Are you sure you want to archive the selected phrases?',
+          description: 'Archive phrases for later use',
+          requiresTranslation: false,
+        },
+        {
+          key: 'tag',
+          label: 'Add Tag',
+          operation: 'tag',
+          icon: <UserOutlined />,
+          description: 'Add a tag to selected phrases',
           requiresTranslation: false,
         },
       ];
 
+    case 'needs_attention':
     case 'needs_review':
       return [
         {
           key: 'approve',
           label: 'Approve & Publish',
-          operation: 'approve_translations',
+          operation: 'approve_translations', // Maps to approve_translations in backend
           type: 'primary',
           icon: <CheckOutlined />,
           description: 'Approve translations and publish them',
@@ -116,7 +120,7 @@ export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
         {
           key: 'reject',
           label: 'Reject',
-          operation: 'reject',
+          operation: 'reject_translations', // Maps to reject_translations in backend
           icon: <CloseOutlined />,
           confirmMessage:
             'Are you sure you want to reject the selected phrases?',
@@ -126,9 +130,17 @@ export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
         {
           key: 'send-back',
           label: 'Send Back to Pending',
-          operation: 'send_back_pending',
+          operation: 'reject_translations', // Also maps to reject_translations to move back to pending
           icon: <UndoOutlined />,
           description: 'Return phrases to pending status for revision',
+          requiresTranslation: false,
+        },
+        {
+          key: 'tag',
+          label: 'Add Tag',
+          operation: 'tag',
+          icon: <UserOutlined />,
+          description: 'Add a tag to selected phrases',
           requiresTranslation: false,
         },
       ];
@@ -138,7 +150,7 @@ export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
         {
           key: 'restore',
           label: 'Restore',
-          operation: 'restore',
+          operation: 'archive', // Toggle archive status (restore from archive)
           type: 'primary',
           icon: <RestOutlined />,
           description: 'Restore phrases to their previous status',
@@ -152,6 +164,14 @@ export const getBatchActionsForTab = (activeTab: string): BatchAction[] => {
           confirmMessage:
             'Are you sure you want to permanently delete the selected phrases? This action cannot be undone.',
           description: 'This will permanently remove phrases from the system',
+          requiresTranslation: false,
+        },
+        {
+          key: 'untag',
+          label: 'Remove Tag',
+          operation: 'untag',
+          icon: <CloseOutlined />,
+          description: 'Remove a tag from selected phrases',
           requiresTranslation: false,
         },
       ];
