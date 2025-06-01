@@ -15,10 +15,10 @@ export interface BatchTranslationParams {
 
 const translationApi = {
   // Translate a single text
-  translateText: async (params: TranslationParams): Promise<string> => {
+  translateText: async (params: TranslationParams): Promise<any> => {
     try {
       const response = await apiClient.post('/translate', params);
-      return response.data.translatedText;
+      return response.data;
     } catch (error) {
       console.error('Error translating text:', error);
       throw error;

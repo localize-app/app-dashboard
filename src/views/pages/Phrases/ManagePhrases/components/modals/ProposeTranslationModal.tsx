@@ -1,10 +1,10 @@
 // src/views/pages/Phrases/ManagePhrases/components/modals/ProposeTranslationModal.tsx
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Checkbox, message, Button } from 'antd';
+import { Modal, Input, Checkbox, message, Button, Space } from 'antd';
 import { Phrase } from '@/types/phrases.types';
 import phrasesApi from '@/api/services/phrasesService';
+import translationApi from '@/api/services/translationService';
 import { RobotOutlined } from '@ant-design/icons';
-import { useManagePhrases } from '../../hooks/useManagePhrases';
 
 interface ProposeTranslationModalProps {
   visible: boolean;
@@ -21,12 +21,9 @@ const ProposeTranslationModal: React.FC<ProposeTranslationModalProps> = ({
   onCancel,
   onSuccess,
 }) => {
-  const { handleAutoTranslate } = useManagePhrases();
-
   const [loading, setLoading] = useState(false);
-
+  const [suggestLoading, setSuggestLoading] = useState(false);
   const [markAsHuman, setMarkAsHuman] = useState(true);
-
   const [proposedTranslation, setProposedTranslation] = useState('');
 
   useEffect(() => {
@@ -35,6 +32,34 @@ const ProposeTranslationModal: React.FC<ProposeTranslationModalProps> = ({
       setProposedTranslation(translation?.text || '');
     }
   }, [phrase, targetLocale, visible]);
+
+  const handleSuggestTranslation = async () => {
+    if (!phrase) return;
+
+    try {
+      setSuggestLoading(true);
+
+      // Use the translation API to get a suggestion
+      const result = await translationApi.translateText({
+        text: phrase.sourceText,
+        targetLanguage: targetLocale,
+        sourceLanguage: 'en-US', // Assuming source is always en-US
+      });
+
+      if (result.translatedText) {
+        setProposedTranslation(result.translatedText);
+        setMarkAsHuman(false); // Auto-translations should not be marked as human
+        message.success('Translation suggestion generated');
+      } else {
+        message.error('Failed to generate translation suggestion');
+      }
+    } catch (err) {
+      console.error('Error getting translation suggestion:', err);
+      message.error('Failed to generate translation suggestion');
+    } finally {
+      setSuggestLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!phrase || !proposedTranslation.trim()) {
@@ -91,20 +116,24 @@ const ProposeTranslationModal: React.FC<ProposeTranslationModalProps> = ({
               className="w-full"
             />
 
-            <Button
-              icon={<RobotOutlined />}
-              onClick={() => handleAutoTranslate(phrase.id, targetLocale)}
-            >
-              Suggest Translation
-            </Button>
-          </div>
+            <div className="flex justify-between items-center mt-2">
+              <Button
+                icon={<RobotOutlined />}
+                onClick={handleSuggestTranslation}
+                loading={suggestLoading}
+                type="default"
+              >
+                Suggest Translation
+              </Button>
 
-          <Checkbox
-            checked={markAsHuman}
-            onChange={(e) => setMarkAsHuman(e.target.checked)}
-          >
-            Mark as human translation
-          </Checkbox>
+              <Checkbox
+                checked={markAsHuman}
+                onChange={(e) => setMarkAsHuman(e.target.checked)}
+              >
+                Mark as human translation
+              </Checkbox>
+            </div>
+          </div>
         </div>
       )}
     </Modal>
