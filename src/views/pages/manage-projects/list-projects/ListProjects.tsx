@@ -7,7 +7,6 @@ import {
   Button,
   Tag,
   Select,
-  Dropdown,
   Tooltip,
   Typography,
   message,
@@ -20,7 +19,6 @@ import {
   FilterOutlined,
   EditOutlined,
   DeleteOutlined,
-  MoreOutlined,
   GlobalOutlined,
   InfoCircleOutlined,
   EyeOutlined,
@@ -299,6 +297,26 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
       onFilter: (value: string, record: Project) =>
         record.projectType === value,
     },
+    // source locale
+    {
+      title: 'Source Locale',
+      dataIndex: 'sourceLocale',
+      key: 'sourceLocale',
+      render: (locale: string) => {
+        const languages: Record<string, string> = {
+          'en-US': 'English (US)',
+          'en-GB': 'English (UK)',
+          'fr-FR': 'French',
+          'es-ES': 'Spanish',
+          'de-DE': 'German',
+          'it-IT': 'Italian',
+          'ja-JP': 'Japanese',
+          'zh-CN': 'Chinese',
+        };
+
+        return languages[locale] || locale || '-';
+      },
+    },
     {
       title: 'Languages',
       dataIndex: 'supportedLocales',
@@ -391,15 +409,15 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
         );
       },
     },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: any, record: Project) => (
-        <Dropdown menu={getActionMenu(record)} trigger={['click']}>
-          <Button icon={<MoreOutlined />} />
-        </Dropdown>
-      ),
-    },
+    // {
+    //   title: 'Actions',
+    //   key: 'actions',
+    //   render: (_: any, record: Project) => (
+    //     <Dropdown menu={getActionMenu(record)} trigger={['click']}>
+    //       <Button icon={<MoreOutlined />} />
+    //     </Dropdown>
+    //   ),
+    // },
   ];
 
   return (

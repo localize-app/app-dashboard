@@ -19,7 +19,6 @@ import OrganizationOverview from './pages/manage-organization/OrganizationOvervi
 import Team from './pages/manage-organization/Team/Team';
 
 // Import project pages
-import OneProject from './pages/manage-projects/one-project/OneProject';
 import ProjectsList from './pages/manage-projects/list-projects/ListProjects';
 import AddProject from './pages/manage-projects/add-project/AddProject';
 
@@ -79,7 +78,7 @@ function App(): JSX.Element {
           element: <OrganizationLayout />,
           children: [
             // Project management routes
-            { path: 'project-overview', element: <OneProject /> },
+            // { path: 'project-overview', element: <OneProject /> },
             { path: 'projects', element: <ProjectsList /> }, // Projects list route
             { path: 'add-project', element: <AddProject /> },
             // { path: 'languages', element: <Languages /> },

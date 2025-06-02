@@ -12,8 +12,9 @@ export interface ValidationResult {
 }
 
 export interface ProjectLocales {
-  required: string[]; // Required locales for the project
-  optional: string[]; // Optional locales
+  sourceLocale: string; // The source locale for the project
+  supportedLocales: string[]; // Required locales for the project
+  targetLocale: string; // Optional target locales, if different from supported locales
 }
 
 /**
@@ -32,15 +33,13 @@ export const validatePhrasesForPublishing = (
   phrases.forEach((phrase) => {
     const missingLocales: string[] = [];
 
-    // Check if phrase has translations for all required locales
-    projectLocales.required.forEach((locale) => {
-      const translation = phrase.translations?.[locale];
-
-      // Translation is missing or empty
+    // only Check if phrase has translations for the current target locale
+    if (projectLocales.targetLocale) {
+      const translation = phrase.translations?.[projectLocales.targetLocale];
       if (!translation || !translation.text?.trim()) {
-        missingLocales.push(locale);
+        missingLocales.push(projectLocales.targetLocale);
       }
-    });
+    }
 
     if (missingLocales.length > 0) {
       invalidPhrases.push(phrase);

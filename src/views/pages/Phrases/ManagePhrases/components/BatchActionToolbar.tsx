@@ -19,7 +19,7 @@ interface BatchActionToolbarProps {
   selectedPhrases: Phrase[];
   activeTab: string;
   batchActions: BatchAction[];
-  projectLocales: { required: string[]; optional: string[] };
+  projectLocales: { sourceLocale: string[]; supportedLocales: string[] };
   onBatchOperation: (operation: string, phrases: Phrase[]) => void;
   onClearSelection?: () => void;
 }
@@ -41,10 +41,12 @@ const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
 
     let invalidCount = 0;
     selectedPhrases.forEach((phrase) => {
-      const hasAllTranslations = projectLocales.required.map((locale, i) => {
-        const translation = phrase.translations?.[locale];
-        return translation && translation.text?.trim();
-      });
+      const hasAllTranslations = projectLocales.supportedLocales.map(
+        (locale, i) => {
+          const translation = phrase.translations?.[locale];
+          return translation && translation.text?.trim();
+        }
+      );
 
       if (!hasAllTranslations) {
         invalidCount++;
@@ -103,8 +105,6 @@ const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
                 )}
               </Button>
             );
-
-            console.log(isDisabled);
 
             // Wrap with tooltip if validation failed
             if (isDisabled) {

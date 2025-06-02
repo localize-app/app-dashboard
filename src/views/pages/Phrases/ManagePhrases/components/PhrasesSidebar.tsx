@@ -1,7 +1,7 @@
-// src/views/pages/Phrases/ManagePhrases/components/PhrasesSidebar.tsx - Updated with Swagger status names
 import React from 'react';
 import { Tag, Button } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
+import { getLocaleDisplayName } from '../utils/validationHelpers';
 
 interface PhrasesSidebarProps {
   activeTab: string;
@@ -48,16 +48,20 @@ const PhrasesSidebar: React.FC<PhrasesSidebarProps> = ({
             <div>
               <div className="text-sm text-gray-500">Source:</div>
               <div className="flex justify-between">
-                <div className="font-medium">English (United States)</div>
-                <div className="text-gray-400">en-US</div>
+                <div className="font-medium">
+                  {getLocaleDisplayName(sourceLocale)}
+                </div>
+                <div className="text-gray-400">{sourceLocale}</div>
               </div>
             </div>
 
             <div className="border-l-4 border-blue-500 pl-2 py-1 bg-blue-50">
               <div className="text-sm text-gray-500">Target:</div>
               <div className="flex justify-between">
-                <div className="font-medium">French (Canada)</div>
-                <div className="text-gray-400">fr-CA</div>
+                <div className="font-medium">
+                  {getLocaleDisplayName(targetLocale)}
+                </div>
+                <div className="text-gray-400">{targetLocale}</div>
               </div>
             </div>
           </div>

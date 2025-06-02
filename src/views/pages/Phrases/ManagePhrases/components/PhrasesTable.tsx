@@ -34,7 +34,7 @@ interface PhrasesTableProps {
   activeTab: string;
   searchText: string;
   targetLocale: string;
-  projectLocales: { required: string[]; optional: string[] };
+  projectLocales: { sourceLocale: string; supportedLocales: string[] };
   onSearch: (value: string) => void;
   onRowSelection: (selectedRows: Phrase[]) => void;
   onBatchOperation: (operation: string, phrases: Phrase[]) => void;
@@ -80,18 +80,17 @@ const PhrasesTable: React.FC<PhrasesTableProps> = ({
     return phrase.translations?.[locale] || null;
   };
 
-  // Check if phrase has all required translations
+  // Check if phrase has translations for the current target locale
   const hasRequiredTranslations = (phrase: Phrase): boolean => {
-    return projectLocales.required.every((locale) => {
-      const translation = phrase.translations?.[locale];
-      return translation && translation.text?.trim();
-    });
+    const translation = getTranslation(phrase, targetLocale);
+    if (!translation) return false;
+
+    // Check if the translation text is present and not just whitespace
+    return !!(translation.text && translation.text.trim().length > 0);
   };
 
   // Render translation status tag
   const renderStatusTag = (status?: any) => {
-    console.log('Rendering status tag for:', status);
-
     if (!status) return null;
 
     const statusMap: Record<string, { color: string; text: string }> = {
@@ -138,7 +137,6 @@ const PhrasesTable: React.FC<PhrasesTableProps> = ({
       key: 'translation',
       render: (_: any, record: Phrase) => {
         const translation = getTranslation(record, targetLocale);
-        console.log(translation);
 
         return (
           <div>

@@ -1,17 +1,21 @@
-// src/views/pages/Phrases/ManagePhrases/hooks/useManagePhrases.ts - Updated with correct API calls
 import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { useParams } from 'react-router-dom';
-import phrasesApi from '@/api/services/phrasesService';
+
 import { Phrase } from '@/types/phrases.types';
-import { useTranslationValidation } from './useTranslationValidation';
 import { ProjectLocales } from '../utils/validationHelpers';
+import { useTranslationValidation } from './useTranslationValidation';
+
+import phrasesApi from '@/api/services/phrasesService';
 import translationApi from '@/api/services/translationService';
+import apiServices from '@/api/apiServices';
 
 export const useManagePhrases = () => {
   const { projectId } = useParams<{ projectId: string }>();
 
   // State
+  const [projectData, setProjectData] = useState<any>(null);
+
   const [phrases, setPhrases] = useState<Phrase[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,13 +25,13 @@ export const useManagePhrases = () => {
   const [activeTab, setActiveTab] = useState<string>('pending');
   const [searchText, setSearchText] = useState<string>('');
   const [selectedRows, setSelectedRows] = useState<Phrase[]>([]);
-  const [sourceLocale] = useState<string>('en-US');
+  const [sourceLocale, setSourceLocale] = useState<string>('');
   const [targetLocale, setTargetLocale] = useState<string>('fr-CA');
 
   // Project locales - in a real app, this would come from the project data
-  const [projectLocales] = useState<ProjectLocales>({
-    required: ['fr-CA'], // These are required for publishing
-    optional: ['es-ES', 'de-DE'], // These are optional
+  const [projectLocales, setProjectLocales] = useState<ProjectLocales>({
+    sourceLocale: '',
+    supportedLocales: [],
   });
 
   const [pagination, setPagination] = useState({
@@ -53,6 +57,40 @@ export const useManagePhrases = () => {
     addPhraseModal: { visible: false },
   });
 
+  // Fetch projects
+  const fetchProjectById = async (projectId: string) => {
+    if (!projectId) return;
+
+    setLoading(true);
+    try {
+      // Fetch projects with params
+      const response = await apiServices.projects.getById(projectId);
+
+      setProjectData(response);
+      setSourceLocale(response.sourceLocale ?? '');
+
+      setProjectLocales({
+        sourceLocale: response.sourceLocale ?? '',
+        supportedLocales: response.supportedLocales ?? [],
+        targetLocale,
+      });
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching project:', err);
+      setError('Failed to load project. Please try again.');
+      message.error('Failed to load project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial load and refresh when filters change
+  useEffect(() => {
+    if (!selectedProject) return;
+
+    fetchProjectById(selectedProject);
+  }, [selectedProject]);
+
   // Validation logic
   const {
     validationResult,
@@ -62,7 +100,9 @@ export const useManagePhrases = () => {
     hideValidationModal,
     proceedWithoutValidation,
   } = useTranslationValidation({
-    projectLocales,
+    selectedProject,
+    targetLocale,
+    projectLocales: { ...projectLocales, targetLocale },
     onValidationPassed: async (phrases: Phrase[], operation: string) => {
       await executeBatchOperation(operation, phrases);
     },
@@ -346,7 +386,7 @@ export const useManagePhrases = () => {
       const phraseIds = phrases.map((p) => p.id);
 
       // Call for each target language in the project
-      const promises = projectLocales.required
+      const promises = projectLocales.supportedLocales
         .filter((locale) => locale !== sourceLocale) // Don't translate to source language
         .map((targetLang) =>
           translationApi.translateBatch({
@@ -361,7 +401,7 @@ export const useManagePhrases = () => {
       await Promise.all(promises);
 
       message.success(
-        `Auto-translated ${phraseIds.length} phrases to ${projectLocales.required.length - 1} languages`
+        `Auto-translated ${phraseIds.length} phrases to ${projectLocales.supportedLocales.length - 1} languages`
       );
       refreshData();
       clearSelection();

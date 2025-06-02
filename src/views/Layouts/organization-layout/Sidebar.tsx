@@ -270,10 +270,10 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: any) {
                 //     <NavLink to="/activity-stream">Activity Stream</NavLink>
                 //   ),
                 // },
-                {
-                  key: 'api-keys',
-                  label: <NavLink to="/api-keys">API Keys</NavLink>,
-                },
+                // {
+                //   key: 'api-keys',
+                //   label: <NavLink to="/api-keys">API Keys</NavLink>,
+                // },
                 {
                   key: 'organization-settings',
                   label: (
