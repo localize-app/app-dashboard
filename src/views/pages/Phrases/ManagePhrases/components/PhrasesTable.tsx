@@ -35,6 +35,7 @@ interface PhrasesTableProps {
   searchText: string;
   targetLocale: string;
   projectLocales: { sourceLocale: string; supportedLocales: string[] };
+  onPaginationChange: (page: number, pageSize?: number) => void;
   onSearch: (value: string) => void;
   onRowSelection: (selectedRows: Phrase[]) => void;
   onBatchOperation: (operation: string, phrases: Phrase[]) => void;
@@ -54,6 +55,7 @@ const PhrasesTable: React.FC<PhrasesTableProps> = ({
   searchText,
   targetLocale,
   projectLocales,
+  onPaginationChange,
   onSearch,
   onRowSelection,
   onBatchOperation,
@@ -332,6 +334,7 @@ const PhrasesTable: React.FC<PhrasesTableProps> = ({
               pageSize={pagination.pageSize}
               total={pagination.total}
               showSizeChanger={false}
+              onChange={onPaginationChange}
             />
           </div>
         )}

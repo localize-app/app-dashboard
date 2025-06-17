@@ -21,11 +21,18 @@ interface PhrasesSidebarProps {
 const PhrasesSidebar: React.FC<PhrasesSidebarProps> = ({
   activeTab,
   tabCounts,
-  sourceLocale,
   targetLocale,
+  projectLocales,
   onTabChange,
   onLanguageChange,
 }) => {
+  const sourceLocale = projectLocales.sourceLocale || 'en';
+  const supportedLocales = projectLocales.supportedLocales || [];
+
+  console.log('sourceLocale:', sourceLocale);
+  console.log('targetLocale:', targetLocale);
+  console.log('supportedLocales:', supportedLocales);
+
   return (
     <div className="w-1/4">
       <div className="border rounded-md overflow-hidden">
@@ -57,12 +64,17 @@ const PhrasesSidebar: React.FC<PhrasesSidebarProps> = ({
 
             <div className="border-l-4 border-blue-500 pl-2 py-1 bg-blue-50">
               <div className="text-sm text-gray-500">Target:</div>
-              <div className="flex justify-between">
-                <div className="font-medium">
-                  {getLocaleDisplayName(targetLocale)}
-                </div>
-                <div className="text-gray-400">{targetLocale}</div>
-              </div>
+              <select
+                value={targetLocale}
+                onChange={(e) => onLanguageChange(e.target.value)}
+                className="w-full p-1 border rounded"
+              >
+                {supportedLocales.map((locale: any) => (
+                  <option key={locale} value={locale}>
+                    {getLocaleDisplayName(locale)}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

@@ -24,13 +24,13 @@ const ManagePhrases: React.FC = () => {
     sourceLocale,
     targetLocale,
     projectLocales,
-
     // Validation
     validationResult,
     validationModalVisible,
     currentOperation,
 
     // Handlers
+    handlePaginationChange,
     handleProjectChange,
     handleTabChange,
     handleSearch,
@@ -63,6 +63,7 @@ const ManagePhrases: React.FC = () => {
           <PhrasesSidebar
             activeTab={activeTab}
             tabCounts={tabCounts}
+            projectLocales={projectLocales}
             sourceLocale={sourceLocale}
             targetLocale={targetLocale}
             onTabChange={handleTabChange}
@@ -78,6 +79,7 @@ const ManagePhrases: React.FC = () => {
             searchText={searchText}
             targetLocale={targetLocale}
             projectLocales={projectLocales}
+            onPaginationChange={handlePaginationChange}
             onSearch={handleSearch}
             onRowSelection={handleRowSelection}
             onBatchOperation={handleBatchOperation}

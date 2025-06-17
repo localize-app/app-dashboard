@@ -26,7 +26,7 @@ export const useManagePhrases = () => {
   const [searchText, setSearchText] = useState<string>('');
   const [selectedRows, setSelectedRows] = useState<Phrase[]>([]);
   const [sourceLocale, setSourceLocale] = useState<string>('');
-  const [targetLocale, setTargetLocale] = useState<string>('fr-CA');
+  const [targetLocale, setTargetLocale] = useState<string>('');
 
   // Project locales - in a real app, this would come from the project data
   const [projectLocales, setProjectLocales] = useState<ProjectLocales>({
@@ -217,8 +217,11 @@ export const useManagePhrases = () => {
         response = await phrasesApi.getPhrases(params);
       }
 
-      setPhrases(Array.isArray(response) ? response : []);
-      setPagination((prev) => ({ ...prev, total: response.length }));
+      setPhrases(response?.data?.length ? response.data : []);
+      setPagination((prev) => ({
+        ...prev,
+        ...(response.pagination || {}),
+      }));
       setError(null);
     } catch (err) {
       console.error('Error fetching phrases:', err);
@@ -280,6 +283,12 @@ export const useManagePhrases = () => {
       }
     }
   }, [selectedProject]);
+
+  // handlePaginationChange
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    setPagination((prev) => ({ ...prev, current: page, pageSize }));
+    clearSelection();
+  };
 
   // Handlers
   const handleProjectChange = (projectId: string) => {
@@ -510,6 +519,7 @@ export const useManagePhrases = () => {
     currentOperation,
 
     // Handlers
+    handlePaginationChange,
     handleProjectChange,
     handleTabChange,
     handleSearch,
