@@ -126,7 +126,19 @@ export const useManagePhrases = () => {
 
     try {
       setLoading(true);
-      const items = phrasesArray.map((row) => ({ id: row.id }));
+
+      // Map phrases to items, handling both id and _id fields
+      const items = phrasesArray.map((row) => {
+        // Use id if available, otherwise use _id
+        const phraseId = row.id || row._id;
+
+        if (!phraseId) {
+          console.error('Phrase without ID found:', row);
+          throw new Error('One or more phrases are missing IDs');
+        }
+
+        return { id: phraseId };
+      });
 
       // Map frontend operations to backend operations
       const operationMapping: Record<string, string> = {
@@ -135,9 +147,9 @@ export const useManagePhrases = () => {
         reject: 'reject_translations',
         archive: 'archive',
         delete: 'delete',
-        unpublish: 'reject_translations', // Move back to pending
-        send_for_review: 'approve_translations', // Send to needs_review
-        restore: 'archive', // Toggle archive status
+        unpublish: 'reject_translations',
+        send_for_review: 'reject_translations',
+        restore: 'archive',
       };
 
       const backendOperation = operationMapping[operation] || operation;
@@ -162,9 +174,17 @@ export const useManagePhrases = () => {
       message.success(`Successfully ${operation}ed ${items.length} phrases`);
       refreshData();
       clearSelection();
-    } catch (err) {
+    } catch (err: any) {
       console.error(`Error performing batch operation: ${operation}`, err);
-      message.error('Operation failed. Please try again.');
+
+      // More detailed error messages
+      if (err.response?.data?.message) {
+        message.error(`Operation failed: ${err.response.data.message}`);
+      } else if (err.message) {
+        message.error(`Operation failed: ${err.message}`);
+      } else {
+        message.error('Operation failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -217,10 +237,36 @@ export const useManagePhrases = () => {
         response = await phrasesApi.getPhrases(params);
       }
 
-      setPhrases(response?.data?.length ? response.data : []);
+      // Handle the response based on its structure
+      let phrasesData = [];
+      let totalCount = 0;
+
+      // Check if response has the new API structure with data and pagination
+      if (response && response.data && response.pagination) {
+        phrasesData = response.data;
+        totalCount = response.pagination.total;
+      } else if (Array.isArray(response)) {
+        // Fallback for old API structure
+        phrasesData = response;
+        totalCount = response.length;
+      } else {
+        console.warn('Unexpected response structure:', response);
+        phrasesData = [];
+        totalCount = 0;
+      }
+
+      // Ensure each phrase has an id field (not just _id)
+      const normalizedPhrases = phrasesData.map((phrase: any) => ({
+        ...phrase,
+        id: phrase.id || phrase._id, // Ensure id is always present
+      }));
+
+      setPhrases(normalizedPhrases);
       setPagination((prev) => ({
         ...prev,
-        ...(response.pagination || {}),
+        total: totalCount,
+        current: pagination.current,
+        pageSize: pagination.pageSize,
       }));
       setError(null);
     } catch (err) {
@@ -496,7 +542,7 @@ export const useManagePhrases = () => {
     if (selectedProject) {
       refreshData();
     }
-  }, [selectedProject, fetchPhrases, fetchPhraseCounts]);
+  }, [selectedProject, targetLocale, fetchPhrases, fetchPhraseCounts]);
 
   return {
     // State
