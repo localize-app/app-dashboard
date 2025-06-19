@@ -69,11 +69,27 @@ export const useManagePhrases = () => {
       setProjectData(response);
       setSourceLocale(response.sourceLocale ?? '');
 
+      // Get target locales (exclude source locale from supported locales)
+      const sourceLocale = response.sourceLocale ?? '';
+      const supportedLocales = response.supportedLocales ?? [];
+      const targetLocales = supportedLocales.filter(
+        (locale: string) => locale !== sourceLocale
+      );
+
+      // Auto-select first target locale if none is currently selected and target locales exist
+      let selectedTargetLocale = targetLocale;
+      if (!targetLocale && targetLocales.length) {
+        selectedTargetLocale = targetLocales[0];
+
+        setTargetLocale(selectedTargetLocale);
+      }
+
       setProjectLocales({
-        sourceLocale: response.sourceLocale ?? '',
-        supportedLocales: response.supportedLocales ?? [],
-        targetLocale,
+        sourceLocale: sourceLocale,
+        supportedLocales: supportedLocales,
+        targetLocale: selectedTargetLocale,
       });
+
       setError(null);
     } catch (err) {
       console.error('Error fetching project:', err);
@@ -192,7 +208,7 @@ export const useManagePhrases = () => {
 
   // Fetch phrases using the correct endpoints
   const fetchPhrases = useCallback(async () => {
-    if (!selectedProject) return;
+    if (!selectedProject && !targetLocale) return;
 
     setLoading(true);
     try {
@@ -354,16 +370,37 @@ export const useManagePhrases = () => {
     setPagination((prev) => ({ ...prev, current: 1 }));
   };
 
-  const handleLanguageChange = (locale: string) => {
-    setTargetLocale(locale);
-  };
+  const clearSelection = useCallback(() => {
+    setSelectedRows([]);
+  }, []);
+
+  const refreshData = useCallback(() => {
+    if (selectedProject && targetLocale) {
+      fetchPhrases();
+      fetchPhraseCounts();
+    }
+  }, [fetchPhrases, fetchPhraseCounts]);
+
+  // Also update the handleLanguageChange function to ensure projectLocales is updated:
+  const handleLanguageChange = useCallback(
+    (locale: string) => {
+      setTargetLocale(locale);
+      setProjectLocales((prev) => ({
+        ...prev,
+        targetLocale: locale,
+      }));
+
+      // Clear selection when language changes
+      clearSelection();
+
+      // Reset pagination when changing language
+      setPagination((prev) => ({ ...prev, current: 1 }));
+    },
+    [clearSelection]
+  );
 
   const handleRowSelection = (selectedRows: Phrase[]) => {
     setSelectedRows(selectedRows);
-  };
-
-  const clearSelection = () => {
-    setSelectedRows([]);
   };
 
   // Batch operation handler with validation
@@ -530,11 +567,6 @@ export const useManagePhrases = () => {
         addPhraseModal: { visible: false },
       }));
     },
-  };
-
-  const refreshData = () => {
-    fetchPhrases();
-    fetchPhraseCounts();
   };
 
   // Effects
