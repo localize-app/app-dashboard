@@ -2,12 +2,12 @@
 import React from 'react';
 
 import ProjectSelector from '@/views/components/ProjectSelector';
-import { useManagePhrases } from '@/views/pages/phrases/ManagePhrases/hooks/useManagePhrases';
-import PhrasesHeader from '@/views/pages/phrases/ManagePhrases/components/PhrasesHeader';
-import PhrasesSidebar from '@/views/pages/phrases/ManagePhrases/components/PhrasesSidebar';
-import PhrasesModals from '@/views/pages/phrases/ManagePhrases/components/PhrasesModals';
-import PhrasesTable from '@/views/pages/phrases/ManagePhrases/components/PhrasesTable';
-import ValidationWarningModal from '@/views/pages/phrases/ManagePhrases/components/ValidationWarningModal';
+import { useManagePhrases } from '@/views/pages/Phrases/ManagePhrases/hooks/useManagePhrases';
+import PhrasesHeader from '@/views/pages/Phrases/ManagePhrases/components/PhrasesHeader';
+import PhrasesSidebar from '@/views/pages/Phrases/ManagePhrases/components/PhrasesSidebar';
+import PhrasesModals from '@/views/pages/Phrases/ManagePhrases/components/PhrasesModals';
+import PhrasesTable from '@/views/pages/Phrases/ManagePhrases/components/PhrasesTable';
+import ValidationWarningModal from '@/views/pages/Phrases/ManagePhrases/components/ValidationWarningModal';
 
 const ManagePhrases: React.FC = () => {
   const {

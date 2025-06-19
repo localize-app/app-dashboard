@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import UserInfoDropdown from './UserInfoDropdown';
 import ThemeToggle from '@/views/components/ThemeToggle';
 
-import { Role } from '@/types/auth.types';
 import { useAuthContext } from '@/context/AuthContext';
 
 interface HeaderProps {
@@ -19,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({
   variant = 'default',
 }) => {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const { user, hasRole } = useAuthContext();
+  const { user } = useAuthContext();
 
   return (
     <header
@@ -52,26 +51,6 @@ const Header: React.FC<HeaderProps> = ({
                 <rect x="4" y="17" width="16" height="2" />
               </svg>
             </button>
-          </div>
-
-          {/* Role-based navigation items could go here */}
-          <div className="hidden md:flex items-center space-x-3">
-            {hasRole([Role.ADMIN]) && (
-              <Link
-                to="/organization-overview"
-                className="text-sm text-gray-600 dark:text-gray-300 hover:text-violet-500 dark:hover:text-violet-400"
-              >
-                Admin
-              </Link>
-            )}
-            {hasRole([Role.ADMIN, Role.MANAGER]) && (
-              <Link
-                to="/project-overview"
-                className="text-sm text-gray-600 dark:text-gray-300 hover:text-violet-500 dark:hover:text-violet-400"
-              >
-                Projects
-              </Link>
-            )}
           </div>
 
           {/* Header: Right side */}

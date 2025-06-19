@@ -27,7 +27,7 @@ import ThemeProvider from '../utils/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
 import UserContextProvider from '@/context/UserContext';
 import Dashboard from './pages/dashboard/Dashboard';
-import ManagePhrases from './pages/phrases/ManagePhrases/ManagePhrases';
+import ManagePhrases from './pages/Phrases/ManagePhrases/ManagePhrases';
 import Companies from './pages/manage-organization/ManageCompanies';
 
 // Create a query client
