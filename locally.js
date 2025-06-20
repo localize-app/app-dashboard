@@ -2,13 +2,14 @@
 (function () {
   // Enhanced configuration
   const config = {
-    projectKey: 'prj_421a6b8d1377ff668fe596396d475575',
+    projectKey: 'prj_ec162d4ac64fdc35fdbe464b4fcc5936',
     apiEndpoint: 'http://localhost:3000/phrases/batch-extract',
     translationsEndpoint: 'http://localhost:3000/translate',
-    sendFrequency: 30000,
+    sendFrequency: 2000,
     minStringsToSend: 5,
     maxRetries: 3,
     excludeTags: ['script', 'style', 'noscript', 'code', 'pre'],
+    excludeClasses: ['no-translate'], // Added no-translate to excluded classes
     debounceDelay: 2000,
     defaultLanguage: 'en',
     availableLanguages: [
@@ -35,6 +36,23 @@
     localStorage.getItem('localize-language') || config.defaultLanguage;
   let translations = {};
   let originalTexts = new Map(); // Store original texts for elements
+
+  // Helper function to check if element should be processed
+  function shouldProcessElement(element) {
+    if (!element) return false;
+
+    // Check if element itself has no-translate class
+    if (element.classList && element.classList.contains('no-translate')) {
+      return false;
+    }
+
+    // Check if any parent has no-translate class
+    if (element.closest && element.closest('.no-translate')) {
+      return false;
+    }
+
+    return true;
+  }
 
   // Create language switcher UI
   function createLanguageSwitcher() {
@@ -266,6 +284,11 @@
           const parent = node.parentElement;
           if (!parent) return NodeFilter.FILTER_REJECT;
 
+          // Skip if parent should not be processed (has no-translate class)
+          if (!shouldProcessElement(parent)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
           // Skip excluded elements
           if (config.excludeTags.includes(parent.tagName.toLowerCase())) {
             return NodeFilter.FILTER_REJECT;
@@ -296,8 +319,13 @@
 
     // Apply translations to attributes
     document
-      .querySelectorAll('[placeholder],[alt],[title],[aria-label]')
+      .querySelectorAll(
+        '[placeholder]:not(.no-translate),[alt]:not(.no-translate),[title]:not(.no-translate),[aria-label]:not(.no-translate)'
+      )
       .forEach((el) => {
+        // Double-check element should be processed
+        if (!shouldProcessElement(el)) return;
+
         ['placeholder', 'alt', 'title', 'aria-label'].forEach((attr) => {
           if (el.hasAttribute(attr)) {
             const originalText = getOriginalAttributeText(el, attr);
@@ -369,23 +397,26 @@
           if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
 
           const parent = node.parentElement;
-          if (
-            parent &&
-            config.excludeTags.includes(parent.tagName.toLowerCase())
-          ) {
+          if (!parent) return NodeFilter.FILTER_REJECT;
+
+          // Skip if parent should not be processed (has no-translate class)
+          if (!shouldProcessElement(parent)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
+          if (config.excludeTags.includes(parent.tagName.toLowerCase())) {
             return NodeFilter.FILTER_REJECT;
           }
 
           // Skip language switcher elements
-          if (parent && parent.closest('#localize-language-switcher')) {
+          if (parent.closest('#localize-language-switcher')) {
             return NodeFilter.FILTER_REJECT;
           }
 
           if (
-            parent &&
-            (parent.offsetParent === null ||
-              getComputedStyle(parent).display === 'none' ||
-              getComputedStyle(parent).visibility === 'hidden')
+            parent.offsetParent === null ||
+            getComputedStyle(parent).display === 'none' ||
+            getComputedStyle(parent).visibility === 'hidden'
           ) {
             return NodeFilter.FILTER_REJECT;
           }
@@ -403,8 +434,13 @@
     }
 
     document
-      .querySelectorAll('[placeholder],[alt],[title],[aria-label]')
+      .querySelectorAll(
+        '[placeholder]:not(.no-translate),[alt]:not(.no-translate),[title]:not(.no-translate),[aria-label]:not(.no-translate)'
+      )
       .forEach((el) => {
+        // Double-check element should be processed
+        if (!shouldProcessElement(el)) return;
+
         ['placeholder', 'alt', 'title', 'aria-label'].forEach((attr) => {
           if (el.hasAttribute(attr)) {
             const originalText = getOriginalAttributeText(el, attr);
@@ -558,6 +594,14 @@
             continue;
           }
 
+          // Skip mutations on no-translate elements
+          if (
+            mutation.target.nodeType === Node.ELEMENT_NODE &&
+            !shouldProcessElement(mutation.target)
+          ) {
+            continue;
+          }
+
           if (
             mutation.type === 'characterData' ||
             mutation.type === 'childList'
@@ -585,24 +629,48 @@
           continue;
         }
 
+        // Skip mutations on no-translate elements
+        if (
+          mutation.target.nodeType === Node.ELEMENT_NODE &&
+          !shouldProcessElement(mutation.target)
+        ) {
+          continue;
+        }
+
         if (mutation.type === 'characterData') {
-          shouldExtract = true;
-          shouldTranslate = true;
-          break;
+          // Check if the text node's parent should be processed
+          const parent = mutation.target.parentElement;
+          if (parent && shouldProcessElement(parent)) {
+            shouldExtract = true;
+            shouldTranslate = true;
+            break;
+          }
         }
 
         if (mutation.type === 'childList') {
           for (const node of mutation.addedNodes) {
             if (node.id === 'localize-language-switcher') continue;
 
+            // Check if the node should be processed
+            if (
+              node.nodeType === Node.ELEMENT_NODE &&
+              !shouldProcessElement(node)
+            ) {
+              continue;
+            }
+
             if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-              shouldExtract = true;
-              shouldTranslate = true;
-              break;
+              const parent = node.parentElement;
+              if (parent && shouldProcessElement(parent)) {
+                shouldExtract = true;
+                shouldTranslate = true;
+                break;
+              }
             }
             if (
               node.nodeType === Node.ELEMENT_NODE &&
-              node.textContent.trim()
+              node.textContent.trim() &&
+              shouldProcessElement(node)
             ) {
               shouldExtract = true;
               shouldTranslate = true;

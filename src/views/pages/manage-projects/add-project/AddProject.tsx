@@ -34,6 +34,7 @@ const ProjectSchema = Yup.object().shape({
   //       then: Yup.string().required('Website URL is required'),
   //       otherwise: Yup.string(),
   //     }),
+  sourceLocale: Yup.string().required('Please choose one'),
   supportedLocales: Yup.array()
     .min(1, 'At least one language must be selected')
     .required('At least one language is required'),
@@ -69,7 +70,7 @@ const AddProject = () => {
   ];
 
   const handleSubmit = async (values, { resetForm }) => {
-    console.log(user);
+    console.log(user, values);
 
     if (!user || !user.company?.id) {
       message.error('No company associated with your account');
@@ -125,8 +126,9 @@ const AddProject = () => {
             name: '',
             description: '',
             projectType: 'website',
+            sourceLocale: 'en-US', // Default to English (US)
             websiteUrl: '',
-            supportedLocales: ['en-US'], // Default to English
+            supportedLocales: ['fr-CA'], // Default to English
           }}
           validationSchema={ProjectSchema}
           onSubmit={handleSubmit}
