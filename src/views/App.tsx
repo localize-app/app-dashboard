@@ -71,7 +71,11 @@ function App(): JSX.Element {
 
     // Manager/Admin routes - requires manager or admin role
     {
-      element: <ProtectedRoute requiredRoles={[Role.MANAGER, Role.ADMIN]} />,
+      element: (
+        <ProtectedRoute
+          requiredRoles={[Role.COMPANY_OWNER, Role.SYSTEM_ADMIN]}
+        />
+      ),
       children: [
         {
           path: '/',
@@ -89,7 +93,7 @@ function App(): JSX.Element {
 
     // Admin only routes
     {
-      element: <ProtectedRoute requiredRoles={[Role.ADMIN]} />,
+      element: <ProtectedRoute requiredRoles={[Role.SYSTEM_ADMIN]} />,
       children: [
         {
           path: '/',

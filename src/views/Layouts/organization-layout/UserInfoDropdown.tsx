@@ -61,9 +61,9 @@ const UserInfoDropdown: React.FC = () => {
   // Get role display name
   const getRoleDisplayName = (role: string) => {
     switch (role) {
-      case Role.ADMIN:
+      case Role.SYSTEM_ADMIN:
         return 'Administrator';
-      case Role.MANAGER:
+      case Role.COMPANY_OWNER:
         return 'Manager';
       case Role.MEMBER:
         return 'Team Member';
@@ -143,7 +143,7 @@ const UserInfoDropdown: React.FC = () => {
               </Link>
             </li>
             {/* Admin specific menu items */}
-            {user?.role === Role.ADMIN && (
+            {user?.role === Role.SYSTEM_ADMIN && (
               <li>
                 <Link
                   className="font-medium text-sm text-violet-500 hover:text-violet-600 dark:hover:text-violet-400 flex items-center py-1 px-3"
